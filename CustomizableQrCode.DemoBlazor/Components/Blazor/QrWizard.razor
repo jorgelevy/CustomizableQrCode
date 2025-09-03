@@ -1,0 +1,1971 @@
+﻿@using System.Threading.Tasks
+@using CustomizableQrCode.Utils
+@using CustomizableQrCode.Logic
+@using CustomizableQrCode.Models
+@using CustomizableQrCode.QrCodeRenderer
+@using static CustomizableQrCode.Models.QrModels
+@using static CustomizableQrCode.Utils.ColorUtils
+@inject IJSRuntime JS
+
+<div class="qr-wizard-layout">
+    <!-- 🔹 Breadcrumb visual de pasos -->
+    <div class="qr-steps">
+        <div class="step @(CurrentStep == 1 ? "active" : (CurrentStep > 1 ? "completed" : ""))">
+            <div class="step-circle">1</div>
+            <div class="step-label">Selecciona tipo</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step @(CurrentStep == 2 ? "active" : (CurrentStep > 2 ? "completed" : ""))">
+            <div class="step-circle">2</div>
+            <div class="step-label">Personaliza</div>
+        </div>
+    </div>
+
+    <!-- Breadcrumb visual -->
+    <div class="qr-wizard-container">
+
+        <!-- Paso 1: Selección -->
+        @if (CurrentStep == 1)
+        {
+            <h3 class="step-title">Paso 1 - Selección de tipo</h3>
+            <div class="qr-options-col">
+                <button class="accordion-toggle d-md-none">
+                    <!-- solo visible en mobile -->
+                    <i class="fa fa-th"></i> Seleccionar tipo de QR
+                </button>
+                <div class="selector-grid accordion-content">
+                @foreach (var opt in QrTypes)
+                {
+                    <button class="selector-item @(SelectedType == opt.Type ? "active" : "")"
+                            @onclick="() => SelectType(opt.Type)">
+                        <i class="@opt.Icon"></i>
+                        <span>@opt.Label</span>
+                    </button>
+                }
+                </div>
+            </div>
+
+        }
+
+        <!-- Paso 2: Personalización -->
+        @if (CurrentStep == 2)
+        {
+            <div class="step-header">
+                <h2 class="step-title">Paso 2 - Personalización</h2>
+
+                @if (SelectedType.HasValue)
+                {
+                    <div class="qr-selected-type-label">
+                        <i class="@SelectedOption?.Icon"></i>
+                        <span>@SelectedOption?.Label</span>
+                    </div>
+                }
+            </div>
+
+            <div class="qr-accordion">
+
+                <!-- 🟢 DATOS / INFORMACIÓN -->
+                <div class="qr-accordion-item @(expandedSection == "datos" ? "active" : "")">
+                    <button type="button" class="qr-accordion-header" @onclick="@(() => ToggleSection("datos"))">
+                        <i class="fas fa-id-card"></i>
+                        <span>Datos / Información</span>
+                        <span class="arrow"></span>
+                    </button>
+                    <div class="qr-accordion-body @(expandedSection == "datos" ? "show" : "")">
+                        <div class="qr-config-card">
+                            @switch (SelectedType)
+                            {
+                                case QrContentType.Link:
+                                    <div class="qr-config-fields">
+                                        <div class="full-width">
+                                            <InputText @bind-Value="LinkUrl" class="qr-input" placeholder="Introduce la dirección" />
+                                            @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.Link)
+                                            {
+                                                <div class="error-msg">@errorMsg</div>
+                                            }
+                                        </div>
+                                    </div>
+                                    break;
+
+                                case QrContentType.Text:
+                                    <div class="qr-config-fields">
+                                        <div class="full-width">
+                                            <InputTextArea @bind-Value="TextContent" class="qr-textarea" placeholder="Introduce el texto..." />
+                                            @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.Text)
+                                            {
+                                                <div class="error-msg">@errorMsg</div>
+                                            }
+                                        </div>
+                                    </div>
+                                    break;
+
+                                case QrContentType.Email:
+                                    <div class="qr-config-fields">
+                                        <div>
+                                            <InputText @bind-Value="EmailTo" class="qr-input" placeholder="ejemplo@email.com" />
+                                        </div>
+                                        <div>
+                                            <InputText @bind-Value="EmailSubject" class="qr-input" placeholder="Asunto del correo" />
+                                        </div>
+                                        <div class="full-width">
+                                            <InputTextArea @bind-Value="EmailBody" class="qr-textarea" placeholder="Escribe tu mensaje..." />
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.Email)
+                                        {
+                                            <div class="error-msg">@errorMsg</div>
+                                        }
+                                    </div>
+                                    break;
+
+                                case QrContentType.Call:
+                                    <div class="qr-config-fields">
+                                        <div class="full-width">
+                                            <InputText @bind-Value="Phone" class="qr-input" placeholder="Ej: +521234567890" />
+                                            @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.Call)
+                                            {
+                                                <div class="error-msg">@errorMsg</div>
+                                            }
+                                        </div>
+                                    </div>
+                                    break;
+
+                                case QrContentType.SMS:
+                                    <div class="qr-config-fields">
+                                        <div>
+                                            <InputText @bind-Value="SmsPhone" class="qr-input" placeholder="Teléfono" />
+                                        </div>
+                                        <div class="full-width">
+                                            <InputTextArea @bind-Value="SmsMessage" class="qr-textarea" placeholder="Mensaje SMS" />
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.SMS)
+                                        {
+                                            <div class="error-msg">@errorMsg</div>
+                                        }
+                                    </div>
+                                    break;
+
+                                case QrContentType.VCard:
+                                    <div class="qr-config-fields">
+                                        <div>
+                                            <InputText @bind-Value="VCardFirstName" class="qr-input" placeholder="Nombre" />
+                                        </div>
+                                        <div>
+                                            <InputText @bind-Value="VCardLastName" class="qr-input" placeholder="Apellido" />
+                                        </div>
+                                        <div>
+                                            <InputText @bind-Value="VCardPhone" class="qr-input" placeholder="Teléfono" />
+                                        </div>
+                                        <div>
+                                            <InputText @bind-Value="VCardEmail" class="qr-input" placeholder="Email" />
+                                        </div>
+                                        <div>
+                                            <InputText @bind-Value="VCardCompany" class="qr-input" placeholder="Empresa" />
+                                        </div>
+                                        <div>
+                                            <InputText @bind-Value="VCardJob" class="qr-input" placeholder="Cargo" />
+                                        </div>
+                                        <div class="full-width">
+                                            <InputText @bind-Value="VCardAddress" class="qr-input" placeholder="Dirección" />
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.VCard)
+                                        {
+                                            <div class="error-msg">@errorMsg</div>
+                                        }
+                                    </div>
+                                    break;
+
+                                case QrContentType.WhatsApp:
+                                    <div class="qr-config-fields">
+                                        <div>
+                                            <InputText @bind-Value="WhatsAppPhone" class="qr-input" placeholder="Teléfono WhatsApp" />
+                                        </div>
+                                        <div class="full-width">
+                                            <InputTextArea @bind-Value="WhatsAppMessage" class="qr-textarea" placeholder="Mensaje para enviar" />
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.WhatsApp)
+                                        {
+                                            <div class="error-msg">@errorMsg</div>
+                                        }
+                                    </div>
+                                    break;
+
+                                case QrContentType.WiFi:
+                                    <div class="qr-config-fields">
+                                        <div>
+                                            <InputText @bind-Value="WiFiSSID" class="qr-input" placeholder="Nombre de red" />
+                                        </div>
+                                        <div>
+                                            <InputText @bind-Value="WiFiPassword" class="qr-input" placeholder="Contraseña" />
+                                        </div>
+                                        <div>
+                                            <InputSelect @bind-Value="WiFiEncryption" class="qr-select">
+                                                <option value="WPA">WPA/WPA2</option>
+                                                <option value="WEP">WEP</option>
+                                                <option value="nopass">Sin contraseña</option>
+                                            </InputSelect>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.WiFi)
+                                        {
+                                            <div class="error-msg">@errorMsg</div>
+                                        }
+                                    </div>
+                                    break;
+
+                                case QrContentType.PDF:
+                                    <div class="qr-config-fields">
+                                        <div class="full-width">
+                                            <InputText @bind-Value="PdfUrl" class="qr-input" placeholder="URL del PDF" />
+                                            @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.PDF)
+                                            {
+                                                <div class="error-msg">@errorMsg</div>
+                                            }
+                                        </div>
+                                    </div>
+                                    break;
+
+                                case QrContentType.App:
+                                    <div class="qr-config-fields">
+                                        <div class="full-width">
+                                            <InputText @bind-Value="AppUrl" class="qr-input" placeholder="URL de la App (App Store, Play Store...)" />
+                                            @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.App)
+                                            {
+                                                <div class="error-msg">@errorMsg</div>
+                                            }
+                                        </div>
+                                    </div>
+                                    break;
+
+                                case QrContentType.Images:
+                                    <div class="qr-config-fields">
+                                        <div class="full-width">
+                                            <InputText @bind-Value="ImageUrl" class="qr-input" placeholder="URL de la imagen" />
+                                            @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.Images)
+                                            {
+                                                <div class="error-msg">@errorMsg</div>
+                                            }
+                                        </div>
+                                    </div>
+                                    break;
+
+                                case QrContentType.Video:
+                                    <div class="qr-config-fields">
+                                        <div class="full-width">
+                                            <InputText @bind-Value="VideoUrl" class="qr-input" placeholder="URL del video" />
+                                            @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.Video)
+                                            {
+                                                <div class="error-msg">@errorMsg</div>
+                                            }
+                                        </div>
+                                    </div>
+                                    break;
+
+                                case QrContentType.SocialMedia:
+                                    <div class="qr-config-fields">
+                                        <div class="full-width">
+                                            <InputText @bind-Value="SocialUrl" class="qr-input" placeholder="URL del perfil social" />
+                                            @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.SocialMedia)
+                                            {
+                                                <div class="error-msg">@errorMsg</div>
+                                            }
+                                        </div>
+                                    </div>
+                                    break;
+
+                                case QrContentType.Event:
+                                    <div class="qr-config-fields">
+                                        <div>
+                                            <InputText @bind-Value="EventTitle" class="qr-input" placeholder="Título del evento" />
+                                        </div>
+                                        <div>
+                                            <InputText @bind-Value="EventLocation" class="qr-input" placeholder="Ubicación" />
+                                        </div>
+                                        <div>
+                                            <InputText @bind-Value="EventStart" class="qr-input" placeholder="YYYY-MM-DD HH:mm" />
+                                        </div>
+                                        <div>
+                                            <InputText @bind-Value="EventEnd" class="qr-input" placeholder="YYYY-MM-DD HH:mm" />
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.Event)
+                                        {
+                                            <div class="error-msg">@errorMsg</div>
+                                        }
+                                    </div>
+                                    break;
+
+                                case QrContentType.Barcode2D:
+                                    <div class="qr-config-fields">
+                                        <div class="full-width">
+                                            <InputText @bind-Value="Barcode2DContent" class="qr-input" placeholder="Texto o número" />
+                                            @if (!string.IsNullOrEmpty(errorMsg) && SelectedType == QrContentType.Barcode2D)
+                                            {
+                                                <div class="error-msg">@errorMsg</div>
+                                            }
+                                        </div>
+                                    </div>
+                                    break;
+                            }
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 🎨 DISEÑO DEL QR -->
+                <div class="qr-accordion-item @(expandedSection == "diseno" ? "active" : "")">
+                    <button type="button" class="qr-accordion-header" @onclick="@(() => ToggleSection("diseno"))">
+                        <i class="fas fa-qrcode"></i>
+                        <span>Diseño del QR</span>
+                        <span class="arrow"></span>
+                    </button>
+                    <div class="qr-accordion-body">
+                        <EditForm Model="qrOptions">
+
+                            <!-- 🔹 Tabs -->
+                            <!-- 🔹 Tabs con íconos -->
+                            <div class="qr-tabs">
+                                <button type="button"
+                                        class="@(activeTab == "modulo" ? "tab active" : "tab")"
+                                        @onclick="@(() => activeTab = "modulo")">
+                                    <i class="fas fa-th-large"></i> <!-- Icono módulos -->
+                                    <span>Forma</span>
+                                </button>
+
+                                <button type="button"
+                                        class="@(activeTab == "marco" ? "tab active" : "tab")"
+                                        @onclick="@(() => activeTab = "marco")">
+                                    <i class="fas fa-vector-square"></i> <!-- Icono marco -->
+                                    <span>Marco</span>
+                                </button>
+
+                                <button type="button"
+                                        class="@(activeTab == "centro" ? "tab active" : "tab")"
+                                        @onclick="@(() => activeTab = "centro")">
+                                    <i class="fas fa-circle"></i> <!-- Icono centro -->
+                                    <span>Centro</span>
+                                </button>
+
+                                <button type="button"
+                                        class="@(activeTab == "config" ? "tab active" : "tab")"
+                                        @onclick="@(() => activeTab = "config")">
+                                    <i class="fas fa-cogs"></i> <!-- Icono configuración -->
+                                    <span>Configuración </span>
+                                </button>
+                            </div>
+
+                            <!-- 🔹 Contenido dinámico de las pestañas -->
+                            <div class="qr-tab-content">
+                                @if (activeTab == "modulo")
+                                {
+                                    <div class="qr-tab-pane">
+                                        <QrModuleShapeSelector SelectedShape="qrOptions.ModuleShape"
+                                                               SelectedShapeChanged="OnShapeChanged"
+                                                               SelectedColor="qrOptions.ModuleColor"/>
+                                        <!-- Color módulo -->
+                                        <input type="color"
+                                               value="@tempModuleColor"
+                                               @oninput="(e) => OnTempModuleColorChanged(e.Value?.ToString())"
+                                               @onchange="ApplyModuleColor"
+                                               class="qr-color-picker" />
+                                    </div>
+                                }
+                                else if (activeTab == "marco")
+                                {
+                                    <div class="qr-tab-pane">
+                                        <QrEyeFrameShapeSelector SelectedShape="qrOptions.EyeFrameShape"
+                                                                 SelectedShapeChanged="OnFrameChanged"
+                                                                 SelectedColor="qrOptions.EyeFrameColor"/>
+
+                                        <!-- Color marco -->
+                                        <input type="color"
+                                               value="@tempFrameColor"
+                                               class="qr-color-picker"
+                                               @oninput="(e) => OnTempFrameColorChanged(e.Value?.ToString())"
+                                               @onchange="ApplyFrameColor" />
+                                    </div>
+                                }
+                                else if (activeTab == "centro")
+                                {
+                                    <div class="qr-tab-pane">
+                                        <QrEyeCenterShapeSelector SelectedEyeShape="qrOptions.EyeCenterShape"
+                                                                  SelectedEyeShapeChanged="OnCenterEyeChanged"
+                                                                  SelectedEyeColor="qrOptions.EyeCenterColor"
+                                                                  AllowedCenters="AllowedCenters" />
+                                        <!-- Color centro -->
+                                        <input type="color"
+                                               value="@tempCenterColor"
+                                               class="qr-color-picker"
+                                               @oninput="(e) => OnTempCenterColorChanged(e.Value?.ToString())"
+                                               @onchange="ApplyCenterColor" />
+                                    </div>
+                                }
+                                else if (activeTab == "config")
+                                {
+                                    <div class="qr-tab-pane">
+                                        <!-- Corrección de error -->
+                                        <div class="qr-config-fields">
+                                            <label class="qr-label">Corrección de error</label>
+                                            <InputSelect @bind-Value="qrOptions.CorrectionLevel" @onchange="OnCorrectionLevelChanged" class="qr-select">
+                                                <option value="L">L - Bajo (7%)</option>
+                                                <option value="M">M - Medio (15%)</option>
+                                                <option value="Q">Q - Alto (25%)</option>
+                                                <option value="H">H - Máximo (30%)</option>
+                                            </InputSelect>
+                                        </div>
+
+                                        <!-- Calidad -->
+                                        <div class="qr-config-fields">
+                                            <label class="qr-label">Calidad (resolución)</label>
+                                            <InputSelect @bind-Value="qrOptions.Quality" @onchange="OnQualityChanged" class="qr-select">
+                                                <option value="low">Baja</option>
+                                                <option value="medium">Media</option>
+                                                <option value="high">Alta</option>
+                                            </InputSelect>
+                                        </div>
+
+                                        <!-- Archivo/logo -->
+                                        <div class="qr-config-fields">
+                                            <InputFile OnChange="OnLogoChanged" class="qr-file" />
+
+                                            <!-- Botón estilizado -->
+                                            <label for="logoUpload" class="qr-file-label">
+                                                <i class="fas fa-upload"></i> Seleccionar archivo
+                                            </label>
+
+                                            @if (!string.IsNullOrEmpty(logoFileName))
+                                            {
+                                                <div class="qr-file-name">@logoFileName</div>
+                                            }
+                                            @if (!string.IsNullOrEmpty(logoPreviewUrl))
+                                            {
+                                                <div class="qr-logo-preview">
+                                                    <img src="@logoPreviewUrl" alt="Logo preview" />
+                                                </div>
+                                            }
+                                        </div>
+
+                                    </div>
+                                }
+
+                            </div>
+
+
+                            @if (showToastColor)
+                            {
+                                <div class="qr-toast-warning">
+                                    @toastMessage
+                                </div>
+                            }
+                        </EditForm>
+                    </div>
+                </div>
+
+                <div class="wizard-actions">
+                    <button class="btn btn-back" @onclick="PrevStep">
+                        <i class="fas fa-arrow-left"></i> Atrás
+                    </button>
+                    @* <button class="btn btn-generate" @onclick="GenerateQr">
+                        <i class="fas fa-qrcode"></i> Generar QR
+                    </button> *@
+                    <button class="btn btn-generate" @onclick="GenerateQr" disabled="@(isLoading || !isInputValid)">
+                        <i class="fas fa-qrcode"></i> Generar QR
+                    </button>
+                </div>
+
+            </div>
+        }
+
+    </div>
+</div>
+
+@code {
+
+    [Parameter] public EventCallback<QrCodeOptions> OnOptionsChanged { get; set; }
+    QrCodeOptions qrOptions = new QrCodeOptions();
+
+    // Colores temporales
+    private string tempModuleColor;
+    private string tempFrameColor;
+    private string tempCenterColor;
+
+    protected override void OnInitialized()
+    {
+        // Inicializamos con los colores actuales
+        tempModuleColor = qrOptions.ModuleColor;
+        tempFrameColor = qrOptions.EyeFrameColor;
+        tempCenterColor = qrOptions.EyeCenterColor;
+        showToastColor = false;
+        toastMessage = string.Empty;
+
+    }
+
+    List<QrTypeOption> QrTypes = new()
+    {
+        new() { Type = QrContentType.Link,      Icon = "fas fa-link",         Label = "Enlace",      Tooltip = "Genera un QR para un enlace web." },
+        new() { Type = QrContentType.Call,      Icon = "fas fa-phone",        Label = "Llamada",     Tooltip = "Inicia una llamada telefónica." },
+        new() { Type = QrContentType.VCard,     Icon = "fas fa-user",         Label = "vCard",       Tooltip = "Agrega contacto a la agenda." },
+        new() { Type = QrContentType.SMS,       Icon = "fas fa-comment-alt",  Label = "SMS",         Tooltip = "Envía un mensaje SMS." },
+        new() { Type = QrContentType.Email,     Icon = "fas fa-envelope",     Label = "Email",       Tooltip = "Correo electrónico prellenado." },
+        new() { Type = QrContentType.Text,      Icon = "fas fa-align-left",   Label = "Texto",       Tooltip = "Comparte un mensaje de texto." },
+        new() { Type = QrContentType.WhatsApp,  Icon = "fab fa-whatsapp",     Label = "WhatsApp",    Tooltip = "Abre chat de WhatsApp." },
+        new() { Type = QrContentType.WiFi,      Icon = "fas fa-wifi",         Label = "WiFi",        Tooltip = "Conéctate a una red WiFi." },
+        new() { Type = QrContentType.PDF,       Icon = "fas fa-file-pdf",     Label = "PDF",         Tooltip = "Descarga un archivo PDF." },
+        new() { Type = QrContentType.App,       Icon = "fas fa-mobile-alt",   Label = "App",         Tooltip = "Redirige a una app móvil." },
+        new() { Type = QrContentType.Images,    Icon = "fas fa-image",        Label = "Imagen",      Tooltip = "Muestra una imagen." },
+        new() { Type = QrContentType.Video,     Icon = "fas fa-video",        Label = "Video",       Tooltip = "Muestra un video." },
+        new() { Type = QrContentType.SocialMedia,Icon = "fas fa-hashtag",     Label = "Social",      Tooltip = "Perfil/red social." },
+        new() { Type = QrContentType.Event,     Icon = "fas fa-calendar-check",Label = "Evento",     Tooltip = "Evento de calendario (iCal)." },
+        new() { Type = QrContentType.Barcode2D, Icon = "fas fa-barcode",      Label = "Código 2D",   Tooltip = "Código de barras (DataMatrix, etc)." },
+    };
+
+    private string logoPreviewUrl;
+    private string logoFileName;
+    private string logoBase64; // para el QR real
+    private string logoError;
+
+    public QrContentType? SelectedType { get; set; } = null;
+
+    private System.Threading.Timer? debounceTimer;
+
+    private string inputValue = "";
+    private string errorMsg = "";
+    private bool isInputValid = false;
+
+    int SelectedIndex = 0;
+    string CenterFadeClass = "";
+    private string QrSvgString;
+
+    // Referencias a los botones, usando el Id único
+    ElementReference[] ButtonRefs = new ElementReference[20]; // O ajusta el tamaño a tus opciones
+
+    double GetAngle(int i) => i * (360.0 / QrTypes.Count);
+
+    private void SelectType(QrContentType type)
+    {
+        SelectedType = type;
+        CurrentStep = 2; // Avanzar directamente al Paso 2
+        expandedSection = "datos";
+        StateHasChanged();
+    }
+
+    QrTypeOption SelectedOption => QrTypes.FirstOrDefault(o => o.Type == SelectedType);
+
+    string QrContent { get; set; }
+
+    private int CurrentStep { get; set; } = 1;
+
+    private string activeTab = "modulo"; // 👈 Valor por defecto (abre Forma del módulo al iniciar)
+
+    private void NextStep()
+    {
+        if (CurrentStep < 4)
+            CurrentStep++;
+    }
+
+    private void PrevStep()
+    {
+        if (CurrentStep > 1)
+            CurrentStep--;
+    }
+
+    // --- Campos para cada tipo ---
+    // ===============================
+    // Propiedades para binding y validación
+    // ===============================
+    // private string linkUrl = "https://midominio.com";
+    private string linkUrl;
+    public string LinkUrl
+    {
+        get => linkUrl;
+        set
+        {
+            if (linkUrl != value)
+            {
+                linkUrl = value;
+                ValidateInputs();
+                if (isInputValid)
+                {
+                    UpdateOptions(); // solo actualiza QR si el contenido es válido
+                }
+                else
+                {
+                    qrOptions.Content = string.Empty; // limpia el contenido del QR inválido
+                    StateHasChanged(); // fuerza refresco de error
+                }
+            }
+        }
+    }
+
+    private string textContent;
+    public string TextContent
+    {
+        get => textContent;
+        set
+        {
+            if (textContent != value)
+            {
+                textContent = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string emailTo;
+    public string EmailTo
+    {
+        get => emailTo;
+        set
+        {
+            if (emailTo != value)
+            {
+                emailTo = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string emailSubject;
+    public string EmailSubject
+    {
+        get => emailSubject;
+        set
+        {
+            if (emailSubject != value)
+            {
+                emailSubject = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string emailBody;
+    public string EmailBody
+    {
+        get => emailBody;
+        set
+        {
+            if (emailBody != value)
+            {
+                emailBody = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string phone;
+    public string Phone
+    {
+        get => phone;
+        set
+        {
+            if (phone != value)
+            {
+                phone = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string smsPhone;
+    public string SmsPhone
+    {
+        get => smsPhone;
+        set
+        {
+            if (smsPhone != value)
+            {
+                smsPhone = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string smsMessage;
+    public string SmsMessage
+    {
+        get => smsMessage;
+        set
+        {
+            if (smsMessage != value)
+            {
+                smsMessage = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string vCardFirstName;
+    public string VCardFirstName
+    {
+        get => vCardFirstName;
+        set
+        {
+            if (vCardFirstName != value)
+            {
+                vCardFirstName = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string vCardLastName;
+    public string VCardLastName
+    {
+        get => vCardLastName;
+        set
+        {
+            if (vCardLastName != value)
+            {
+                vCardLastName = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string vCardPhone;
+    public string VCardPhone
+    {
+        get => vCardPhone;
+        set
+        {
+            if (vCardPhone != value)
+            {
+                vCardPhone = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string vCardEmail;
+    public string VCardEmail
+    {
+        get => vCardEmail;
+        set
+        {
+            if (vCardEmail != value)
+            {
+                vCardEmail = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string vCardCompany;
+    public string VCardCompany
+    {
+        get => vCardCompany;
+        set
+        {
+            if (vCardCompany != value)
+            {
+                vCardCompany = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string vCardJob;
+    public string VCardJob
+    {
+        get => vCardJob;
+        set
+        {
+            if (vCardJob != value)
+            {
+                vCardJob = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string vCardAddress;
+    public string VCardAddress
+    {
+        get => vCardAddress;
+        set
+        {
+            if (vCardAddress != value)
+            {
+                vCardAddress = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string whatsAppPhone;
+    public string WhatsAppPhone
+    {
+        get => whatsAppPhone;
+        set
+        {
+            if (whatsAppPhone != value)
+            {
+                whatsAppPhone = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string whatsAppMessage;
+    public string WhatsAppMessage
+    {
+        get => whatsAppMessage;
+        set
+        {
+            if (whatsAppMessage != value)
+            {
+                whatsAppMessage = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string wiFiSSID;
+    public string WiFiSSID
+    {
+        get => wiFiSSID;
+        set
+        {
+            if (wiFiSSID != value)
+            {
+                wiFiSSID = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string wiFiPassword;
+    public string WiFiPassword
+    {
+        get => wiFiPassword;
+        set
+        {
+            if (wiFiPassword != value)
+            {
+                wiFiPassword = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string wiFiEncryption = "WPA";
+    public string WiFiEncryption
+    {
+        get => wiFiEncryption;
+        set
+        {
+            if (wiFiEncryption != value)
+            {
+                wiFiEncryption = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string pdfUrl;
+    public string PdfUrl
+    {
+        get => pdfUrl;
+        set
+        {
+            if (pdfUrl != value)
+            {
+                pdfUrl = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string appUrl;
+    public string AppUrl
+    {
+        get => appUrl;
+        set
+        {
+            if (appUrl != value)
+            {
+                appUrl = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string imageUrl;
+    public string ImageUrl
+    {
+        get => imageUrl;
+        set
+        {
+            if (imageUrl != value)
+            {
+                imageUrl = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string videoUrl;
+    public string VideoUrl
+    {
+        get => videoUrl;
+        set
+        {
+            if (videoUrl != value)
+            {
+                videoUrl = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string socialUrl;
+    public string SocialUrl
+    {
+        get => socialUrl;
+        set
+        {
+            if (socialUrl != value)
+            {
+                socialUrl = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string eventTitle;
+    public string EventTitle
+    {
+        get => eventTitle;
+        set
+        {
+            if (eventTitle != value)
+            {
+                eventTitle = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string eventLocation;
+    public string EventLocation
+    {
+        get => eventLocation;
+        set
+        {
+            if (eventLocation != value)
+            {
+                eventLocation = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string eventStart;
+    public string EventStart
+    {
+        get => eventStart;
+        set
+        {
+            if (eventStart != value)
+            {
+                eventStart = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string eventEnd;
+    public string EventEnd
+    {
+        get => eventEnd;
+        set
+        {
+            if (eventEnd != value)
+            {
+                eventEnd = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private string barcode2DContent;
+    public string Barcode2DContent
+    {
+        get => barcode2DContent;
+        set
+        {
+            if (barcode2DContent != value)
+            {
+                barcode2DContent = value;
+                ValidateInputs();
+                UpdateOptions(); //
+            }
+        }
+    }
+
+    private bool ShowTooltip { get; set; }
+    private bool showAllTypes = false;
+    private int visibleTypesCount = 10; // Ajusta según tu diseño
+    private int screenWidth;
+
+    // Opcional: Método para mostrar un ícono por tipo (puedes cambiar por <i class="fa ..."> si usas FontAwesome)
+    string GetTypeIcon(QrContentType type) => type switch
+    {
+        QrContentType.Link => "<i class='fas fa-link'></i>",
+        QrContentType.Text => "<i class='fas fa-font'></i>",
+        QrContentType.Email => "<i class='fas fa-envelope'></i>",
+        QrContentType.Call => "<i class='fas fa-phone'></i>",
+        QrContentType.SMS => "<i class='fas fa-sms'></i>",
+        QrContentType.VCard => "<i class='fas fa-id-card'></i>",
+        QrContentType.WhatsApp => "<i class='fab fa-whatsapp'></i>",
+        QrContentType.WiFi => "<i class='fas fa-wifi'></i>",
+        QrContentType.PDF => "<i class='fas fa-file-pdf'></i>",
+        QrContentType.App => "<i class='fas fa-mobile-alt'></i>",
+        QrContentType.Images => "<i class='fas fa-image'></i>",
+        QrContentType.Video => "<i class='fas fa-video'></i>",
+        QrContentType.SocialMedia => "<i class='fas fa-users'></i>",
+        QrContentType.Event => "<i class='fas fa-calendar-alt'></i>",
+        QrContentType.Barcode2D => "<i class='fas fa-barcode'></i>",
+        _ => "<i class='fas fa-qrcode'></i>"
+    };
+
+    private void Limpiar()
+    {
+        LinkUrl = TextContent = EmailTo = EmailSubject = EmailBody = Phone = SmsPhone = SmsMessage =
+        VCardFirstName = VCardLastName = VCardPhone = VCardEmail = VCardCompany = VCardJob = VCardAddress =
+        WhatsAppPhone = WhatsAppMessage = WiFiSSID = WiFiPassword = PdfUrl = AppUrl = ImageUrl = VideoUrl =
+        SocialUrl = EventTitle = EventLocation = EventStart = EventEnd = Barcode2DContent = "";
+        WiFiEncryption = "WPA";
+
+        errorMsg = "";
+        isInputValid = false;
+        qrGenerado = false;
+        // ...resto de tu lógica para limpiar campos...
+        StateHasChanged();
+    }
+
+    // Métodos auxiliares para formatos especiales
+    private string BuildVCard()
+    {
+        return
+        $@"BEGIN:VCARD
+        VERSION:3.0
+        N:{VCardLastName};{VCardFirstName}
+        FN:{VCardFirstName} {VCardLastName}
+        ORG:{VCardCompany}
+        TITLE:{VCardJob}
+        TEL:{VCardPhone}
+        EMAIL:{VCardEmail}
+        ADR:{VCardAddress}
+        END:VCARD";
+    }
+
+    private string BuildEvent()
+    {
+        // Evento en formato iCal básico (ajustar para tu caso real)
+        return
+        $@"BEGIN:VEVENT
+        SUMMARY:{EventTitle}
+        LOCATION:{EventLocation}
+        DTSTART:{EventStart}
+        DTEND:{EventEnd}
+        END:VEVENT";
+    }
+
+    /*Personalizacion*/
+    private bool CenterIsFixed =>
+    qrOptions != null &&
+    FrameRequiresFixedCenter.TryGetValue(qrOptions.EyeFrameShape, out var fixedCenter) &&
+    fixedCenter;
+
+    private readonly List<EyeCenterShape> AllEyeCenterShapes = Enum.GetValues<EyeCenterShape>().ToList();
+
+
+    // Variables para mostrar QR
+    public string Content { get; set; } = "https://midominio.com";
+    public int Size => CalcularTamañoPorVentana(windowWidth);
+    private int Quality { get; set; } = 2; // Valor inicial por defecto
+
+    private int windowWidth; // Default inicial
+
+    // Campos privados de backing
+    private string tempEyeFrameShapeStr = "Square";
+    private string tempEyeCenterShapeStr = "Square";
+
+    // Enum en uso
+    public EyeFrameShape TempEyeFrameShape { get; set; } = EyeFrameShape.Square;
+    public EyeCenterShape TempEyeCenterShape { get; set; } = EyeCenterShape.Square;
+    public List<EyeCenterShape> AllowedCenters { get; set; } = new List<EyeCenterShape>();
+
+    private string tipoQrSeleccionado = string.Empty;
+
+    public string TempEyeFrameShapeStr
+    {
+        get => tempEyeFrameShapeStr;
+        set
+        {
+            if (tempEyeFrameShapeStr != value)
+            {
+                tempEyeFrameShapeStr = value;
+                TempEyeFrameShape = Enum.Parse<EyeFrameShape>(value);
+                AllowedCenters = GetAllowedCenters(TempEyeFrameShape);
+
+                // Si Leaf o Diamond, fuerza el centro a ser igual al marco
+                if (TempEyeFrameShape == EyeFrameShape.Leaf || TempEyeFrameShape == EyeFrameShape.Diamond || TempEyeFrameShape == EyeFrameShape.CornerRect
+                    || TempEyeFrameShape == EyeFrameShape.TwoCornerRect || TempEyeFrameShape == EyeFrameShape.CornerRectRadio || TempEyeFrameShape == EyeFrameShape.TwoCornerRectIn)
+                {
+                    TempEyeCenterShape = (EyeCenterShape)Enum.Parse(typeof(EyeCenterShape), TempEyeFrameShape.ToString());
+                    TempEyeCenterShapeStr = TempEyeCenterShape.ToString();
+                }
+                // Si la forma actual no está permitida, cambia a la primera
+                else if (!AllowedCenters.Contains(TempEyeCenterShape))
+                {
+                    TempEyeCenterShape = AllowedCenters[0];
+                    TempEyeCenterShapeStr = TempEyeCenterShape.ToString();
+                }
+
+                StateHasChanged();
+            }
+        }
+    }
+
+    public string TempEyeCenterShapeStr
+    {
+        get => tempEyeCenterShapeStr;
+        set
+        {
+            if (tempEyeCenterShapeStr != value)
+            {
+                tempEyeCenterShapeStr = value;
+                TempEyeCenterShape = Enum.Parse<EyeCenterShape>(value);
+            }
+        }
+    }
+
+    private bool showToast = false;
+    private System.Threading.Timer? toastTimer;
+    private bool showToastColor = false;
+    private string toastMessage;
+
+    private bool isLoading = false;
+
+    private int sliderValue = 2;
+
+    bool isSliderActive = false;
+
+    private bool qrGenerado = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            windowWidth = await JS.InvokeAsync<int>("getWindowWidth");
+            qrOptions.Size = CalcularTamañoPorVentana(windowWidth);
+            await JS.InvokeVoidAsync("subscribeResize", DotNetObjectReference.Create(this));
+            UpdateOptions();
+            StateHasChanged();
+        }
+    }
+
+    private int CalcularTamañoPorVentana(int width)
+    {
+        // if (width < 350) return 200;
+        if (width < 500) return 350;
+        if (width < 1200) return 400;
+        if (width < 1500) return 375;
+        // if (width < 1700) return 400;
+        if (width < 2000) return 500;
+        return 550;
+    }
+
+    private async Task GenerateQr()
+    {
+        ValidateInputs();
+
+        if (!isInputValid)
+        {
+            //showToastColor = true;
+            toastMessage = errorMsg ?? "⚠️ Los datos ingresados no son válidos.";
+            ShowDesignError(toastMessage);
+            StateHasChanged();
+            return;
+        }
+
+        qrGenerado = false;
+
+        var colorM = qrOptions.ModuleColor;     // Ejemplo: "#000000"
+        var colorF = qrOptions.BgColor; // Ejemplo: "#FFFFFF"
+
+        if (!Utils.ColorUtils.IsContrastAccessible(colorM, colorF))
+        {
+            //showToastColor = true;
+            toastMessage = "El contraste entre el color de fondo y el código es muy bajo.";
+            ShowDesignError(toastMessage);
+            return;
+        }
+
+        isLoading = true;
+        StateHasChanged();
+        errorMsg = "";
+        isInputValid = false;
+
+        try
+        {
+            // // ✅ Aquí usamos el nuevo método
+            // qrOptions.Content = BuildQrContent();
+
+            // // --- Aquí puedes actualizar cualquier otro campo de qrOptions si fuera necesario ---
+            // qrOptions.ModuleShape = Enum.Parse<ModuleShape>(qrOptions.ModuleShape.ToString());
+            // qrOptions.ModuleColor = qrOptions.ModuleColor;
+            // qrOptions.EyeFrameShape = Enum.Parse<EyeFrameShape>(qrOptions.EyeFrameShape.ToString());
+            // qrOptions.EyeFrameColor = qrOptions.EyeFrameColor;
+            // qrOptions.EyeCenterShape = Enum.Parse<EyeCenterShape>(qrOptions.EyeCenterShape.ToString());
+            // qrOptions.EyeCenterColor = qrOptions.EyeCenterColor;
+            // qrOptions.BgColor = qrOptions.BgColor;
+            // qrOptions.CorrectionLevel = qrOptions.CorrectionLevel;
+            // qrOptions.Size = qrOptions.Size;
+            // qrOptions.Quality = qrOptions.Quality;
+            // qrOptions.LogoBase64 = qrOptions.LogoBase64;
+
+            UpdateOptions();
+
+            if (OnOptionsChanged.HasDelegate)
+                await OnOptionsChanged.InvokeAsync(qrOptions);
+
+            //isInputValid = true;
+            qrGenerado = true;
+
+            // Esto fuerza la actualización del QR generado
+            showToastColor = false;
+            await Task.Delay(1500); // Simulación, reemplaza por tu lógica real
+            ShowToast();
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async void UpdateOptions()
+    {
+        var content = BuildQrContent();
+
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            ShowDesignError("⚠️ Ingresa primero los datos del QR antes de personalizar el diseño.");
+            // No actualizamos el QR si no hay contenido válido
+            return;
+        }
+        else
+        {
+            HideDesignError();
+        }
+
+        // ✅ Si hay contenido válido, lo asignamos
+        qrOptions.Content = content;
+
+        qrOptions.ModuleShape = Enum.Parse<ModuleShape>(qrOptions.ModuleShape.ToString());
+        qrOptions.ModuleColor = qrOptions.ModuleColor;
+        qrOptions.EyeFrameShape = Enum.Parse<EyeFrameShape>(qrOptions.EyeFrameShape.ToString());
+        qrOptions.EyeFrameColor = qrOptions.EyeFrameColor;
+        qrOptions.EyeCenterShape = Enum.Parse<EyeCenterShape>(qrOptions.EyeCenterShape.ToString());
+        qrOptions.EyeCenterColor = qrOptions.EyeCenterColor;
+        qrOptions.BgColor = qrOptions.BgColor;
+        qrOptions.CorrectionLevel = qrOptions.CorrectionLevel;
+        qrOptions.Size = qrOptions.Size;
+        qrOptions.Quality = qrOptions.Quality;
+        qrOptions.LogoBase64 = qrOptions.LogoBase64;
+
+        if (OnOptionsChanged.HasDelegate)
+            await OnOptionsChanged.InvokeAsync(qrOptions);
+    }
+
+    private string BuildQrContent()
+    {
+        return SelectedType switch
+        {
+            QrContentType.Link => QrContentBuilder.BuildLink(LinkUrl),
+            QrContentType.Text => QrContentBuilder.BuildText(TextContent),
+            QrContentType.Email => QrContentBuilder.BuildEmail(EmailTo, EmailSubject, EmailBody),
+            QrContentType.Call => QrContentBuilder.BuildCall(Phone),
+            QrContentType.SMS => QrContentBuilder.BuildSMS(SmsPhone, SmsMessage),
+            QrContentType.VCard => QrContentBuilder.BuildVCard(VCardFirstName, VCardLastName, Phone, EmailTo, VCardCompany, VCardJob, VCardAddress),
+            QrContentType.WhatsApp => QrContentBuilder.BuildWhatsApp(WhatsAppPhone, WhatsAppMessage),
+            QrContentType.WiFi => QrContentBuilder.BuildWiFi(WiFiSSID, WiFiPassword, WiFiEncryption),
+            QrContentType.PDF => QrContentBuilder.BuildPDF(PdfUrl),
+            QrContentType.App => QrContentBuilder.BuildApp(AppUrl),
+            QrContentType.Images => QrContentBuilder.BuildImage(ImageUrl),
+            QrContentType.Video => QrContentBuilder.BuildVideo(VideoUrl),
+            QrContentType.SocialMedia => QrContentBuilder.BuildSocial(SocialUrl),
+            QrContentType.Event => QrContentBuilder.BuildEvent(EventTitle, EventLocation, EventStart, EventEnd),
+            QrContentType.Barcode2D => QrContentBuilder.BuildBarcode2D(Barcode2DContent),
+            _ => Content ?? string.Empty,
+        };
+    }
+
+
+    public async Task OnLogoChanged(InputFileChangeEventArgs e)
+    {
+        logoError = "";
+        logoPreviewUrl = "";
+        logoBase64 = "";
+        logoFileName = "";
+
+        IBrowserFile file = e.File;
+        logoFileName = file.Name;
+
+        // Validar tipo
+
+        if (file.ContentType != "image/png" && file.ContentType != "image/jpeg")
+        {
+            logoError = "El logo debe ser PNG o JPG.";
+            return;
+        }
+
+        // Validar tamaño(ej: 1MB máximo)
+        const long maxSize = 10240 * 10240;
+        if (file.Size > maxSize)
+        {
+            logoError = "El logo debe pesar menos de 10 MB.";
+            return;
+        }
+
+        try
+        {
+
+            // Lee el archivo en memoria como stream
+            using var stream = file.OpenReadStream(maxAllowedSize: 10240 * 10240 * 4); // 4 MB max
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            byte[] imageBytes = ms.ToArray();
+
+            // Construye el string base64 para PNG
+            qrOptions.LogoBase64 = "data:image/png;base64," + Convert.ToBase64String(imageBytes);
+            // Esto es para el preview
+            logoPreviewUrl = qrOptions.LogoBase64;
+            UpdateOptions();
+        }
+        catch (Exception ex)
+        {
+            logoError = "No se pudo leer la imagen, intenta con otro archivo.";
+            throw ex;
+        }
+    }
+
+    // Cuando el usuario cambia el marco del ojo
+    private void OnFrameShapeChanged(ChangeEventArgs e)
+    {
+        // Si usas string, convierte a Enum
+        TempEyeFrameShapeStr = e.Value.ToString();
+        TempEyeFrameShape = Enum.Parse<EyeFrameShape>(TempEyeFrameShapeStr);
+        AllowedCenters = GetAllowedCenters(TempEyeFrameShape);
+
+        // Para Leaf o Diamond: fuerza a que la forma del ojo sea igual que el marco (por defecto)
+        if (TempEyeFrameShape == EyeFrameShape.Leaf || TempEyeFrameShape == EyeFrameShape.Diamond || TempEyeFrameShape == EyeFrameShape.CornerRect)
+        {
+            TempEyeCenterShape = (EyeCenterShape)Enum.Parse(typeof(EyeCenterShape), TempEyeFrameShape.ToString());
+            TempEyeCenterShapeStr = TempEyeCenterShape.ToString();
+        }
+        else if (!AllowedCenters.Contains(TempEyeCenterShape))
+        {
+            TempEyeCenterShape = AllowedCenters[0];
+            TempEyeCenterShapeStr = TempEyeCenterShape.ToString();
+        }
+
+        StateHasChanged();
+    }
+
+    public List<EyeCenterShape> GetAllowedCenters(EyeFrameShape marco)
+    {
+        // Si es Leaf o Diamond: solo ellos + Circle
+        if (marco == EyeFrameShape.Leaf)
+            return new List<EyeCenterShape> { EyeCenterShape.Leaf };
+        if (marco == EyeFrameShape.Diamond)
+            return new List<EyeCenterShape> { EyeCenterShape.Diamond };
+        // Para el resto, todas las opciones
+        return Enum.GetValues(typeof(EyeCenterShape)).Cast<EyeCenterShape>().ToList();
+    }
+
+    private void OnCenterShapeChanged()
+    {
+        TempEyeCenterShape = Enum.Parse<EyeCenterShape>(TempEyeCenterShapeStr);
+    }
+
+    private void GuardarQrSvgString(string svg)
+    {
+        QrSvgString = svg;
+    }
+
+    private async Task DownloadSVG()
+    {
+        if (string.IsNullOrWhiteSpace(QrSvgString))
+        {
+            // Opcional: muestra mensaje de error al usuario
+            return;
+        }
+
+        /*Sin librerias externas*/
+        await JS.InvokeVoidAsync("downloadSvgNative", QrSvgString, "codigoQR.svg");
+    }
+
+    // PNG (usa canvg en JS)
+    private async Task DownloadPNG()
+    {
+        if (string.IsNullOrWhiteSpace(QrSvgString))
+            return;
+
+        /*Sin libreria exnterna*/
+        int size = GetQrSize();
+        await JS.InvokeVoidAsync("svgStringToPng", QrSvgString, size, size, "codigoQR.png");
+    }
+
+    // PDF (usa jsPDF en JS)
+    private async Task DownloadPDF()
+    {
+        /*sin librerias externas*/
+        int size = GetQrSize();
+        await JS.InvokeVoidAsync("exportQrAsPdf", QrSvgString, size, size, "codigoQR.pdf");
+    }
+
+    private void OnShapeChanged(string newValue)
+    {
+        if (!HasValidContent())
+        {
+            ShowDesignError("⚠️ Ingresa primero los datos del QR antes de personalizar el diseño.");
+            return;
+        }
+        else
+        {
+            HideDesignError();
+        }
+
+        qrOptions.ModuleShape = Enum.Parse<ModuleShape>(newValue);
+        UpdateOptions(); // 👈 actualiza vista previa
+    }
+
+    // 🔹 Helper centralizado para validar contraste
+    private bool IsContrastValid(string? foreground, string? background)
+    {
+        if (string.IsNullOrWhiteSpace(foreground) || string.IsNullOrWhiteSpace(background))
+            return true; // fallback: no valida si falta info
+
+        return Utils.ColorUtils.IsContrastAccessible(foreground, background);
+    }
+
+    // 🔹 Mientras mueve el picker (vista previa temporal)
+    private void OnTempModuleColorChanged(string? color)
+    {
+        var newColor = color;
+        var bgColor = qrOptions.BgColor ?? "#FFFFFF";
+
+        if(string.IsNullOrWhiteSpace(newColor))
+        return;
+
+        if (!ColorUtils.IsContrastAccessible(newColor, bgColor))
+        {
+            // ❌ Contraste inválido → sugerir
+            var suggested = ColorUtils.SuggestAccessibleColor(newColor, bgColor);
+
+            //qrOptions.ModuleColor = suggested;
+            tempModuleColor = suggested; // 👈 solo guardamos el valor temporal
+            toastMessage = $"El color elegido tenía bajo contraste. Se ajustó automáticamente a {suggested}.";
+            ShowDesignError(toastMessage);
+            //showToastColor = true;
+        }
+        else
+        {
+            //qrOptions.ModuleColor = newColor;
+            tempModuleColor = newColor; // 👈 solo guardamos el valor temporal
+            toastMessage = string.Empty;
+            showToastColor = false;
+        }
+
+        DebouncedUpdate();
+    }
+
+    // 🔹 Cuando confirma (da Aceptar en el selector)
+    private void ApplyModuleColor(ChangeEventArgs e)
+    {
+        if (!HasValidContent())
+        {
+            ShowDesignError("⚠️ Ingresa primero los datos del QR antes de aplicar colores.");
+            return;
+        }
+        else
+        {
+            HideDesignError();
+        }
+
+        var newColor = e.Value?.ToString();
+        var bgColor = qrOptions.BgColor ?? "#FFFFFF";
+
+        // Caso 1: Cancelación explícita → no aplicar
+        if (string.IsNullOrWhiteSpace(newColor))
+        {
+            qrOptions.ModuleColor = tempModuleColor;
+            showToastColor = false;
+            toastMessage = string.Empty;
+            InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        // Caso 2: El usuario confirmó el mismo color (sin cambios) → solo limpiar toast
+        if (newColor.ToUpper() == qrOptions.ModuleColor)
+        {
+            showToastColor = false;
+            toastMessage = string.Empty;
+            return;
+        }
+
+        // 🔹 Validación de contraste
+        if (!ColorUtils.IsContrastAccessible(newColor, bgColor))
+        {
+            var suggested = ColorUtils.SuggestAccessibleColor(newColor, bgColor);
+            qrOptions.ModuleColor = suggested;
+            toastMessage = $"El color elegido tenía bajo contraste. Se ajustó automáticamente a {suggested}.";
+            ShowDesignError(toastMessage);
+            //showToastColor = true;
+        }
+        else
+        {
+            qrOptions.ModuleColor = newColor;
+            tempModuleColor = newColor; // sincronizamos el temporal
+            toastMessage = string.Empty;
+            showToastColor = false;
+        }
+
+        // 👈 sincronizamos el temporal con el aplicado
+        DebouncedUpdate();
+    }
+
+
+    private void OnFrameChanged(string newValue)
+    {
+        if (!HasValidContent())
+        {
+            ShowDesignError("⚠️ Ingresa primero los datos del QR antes de cambiar el marco.");
+            return;
+        }
+        else
+        {
+            HideDesignError();
+        }
+
+        qrOptions.EyeFrameShape = Enum.Parse<EyeFrameShape>(newValue);
+
+        // Validar centro
+        var allowed = GetAllowedCenters(qrOptions.EyeFrameShape);
+        if (!allowed.Contains(qrOptions.EyeCenterShape))
+        {
+            qrOptions.EyeCenterShape = allowed.First();
+        }
+        UpdateOptions(); // 👈 actualiza vista previa
+
+        AllowedCenters = allowed;
+    }
+
+    // Se ejecuta mientras mueves el picker (no aplica aún al QR real)
+    private void OnTempFrameColorChanged(string? color)
+    {
+        if (!string.IsNullOrWhiteSpace(color))
+            tempFrameColor = color;
+    }
+
+    // Solo se ejecuta si el usuario da "Aceptar"
+    private void ApplyFrameColor(ChangeEventArgs e)
+    {
+        if (!HasValidContent())
+        {
+            ShowDesignError("⚠️ Ingresa primero los datos del QR antes de aplicar colores al marco.");
+            return;
+        }
+        else
+        {
+            HideDesignError();
+        }
+
+        var newColor = e.Value?.ToString();
+        if (!string.IsNullOrWhiteSpace(newColor))
+        {
+            qrOptions.EyeFrameColor = newColor;
+            tempFrameColor = newColor; // sincroniza temporal y real
+            DebouncedUpdate();
+        }
+    }
+    private void OnCenterEyeChanged(string newValue)
+    {
+        qrOptions.EyeCenterShape = Enum.Parse<EyeCenterShape>(newValue);
+        UpdateOptions(); // 👈 actualiza vista previa
+    }
+
+    // Mientras mueves el selector (solo temporal)
+    private void OnTempCenterColorChanged(string? color)
+    {
+        if (!string.IsNullOrWhiteSpace(color))
+            tempCenterColor = color;
+    }
+
+    // Solo se ejecuta si el usuario da "Aceptar"
+    private void ApplyCenterColor(ChangeEventArgs e)
+    {        
+        if (!HasValidContent())
+        {
+            ShowDesignError("⚠️ Ingresa primero los datos del QR antes de aplicar colores al centro.");
+            return;
+        }
+        else
+        {
+            HideDesignError();
+        }
+
+        var newColor = e.Value?.ToString();
+        if (!string.IsNullOrWhiteSpace(newColor))
+        {
+            qrOptions.EyeCenterColor = newColor;
+            tempCenterColor = newColor; // sincroniza temporal y real
+            DebouncedUpdate();
+        }
+    }
+
+    // Convierte el nivel de calidad a tamaño o dpi sugerido
+    private int GetQrSize()
+    {
+        // Puedes definir diferentes resoluciones para cada calidad
+        return Quality switch
+        {
+            0 => 300,  // Básica
+            1 => 450,  // Normal
+            2 => 750,  // Buena
+            3 => 1100, // Alta
+            4 => 2048, // Excelente
+            _ => 450,
+        };
+    }
+
+    private static TEnum TryParseEnum<TEnum>(string value, TEnum defaultValue) where TEnum : struct
+    {
+        if (!string.IsNullOrEmpty(value) && Enum.TryParse(value, true, out TEnum result))
+            return result;
+        return defaultValue;
+    }
+
+    private void ShowToast()
+    {
+        showToast = true;
+        toastTimer?.Dispose();
+        toastTimer = new System.Threading.Timer(_ =>
+        {
+            showToast = false;
+            InvokeAsync(StateHasChanged);
+        }, null, 2000, System.Threading.Timeout.Infinite);
+        StateHasChanged();
+    }
+
+    private void IncrementQuality()
+    {
+        if (Quality < 4)
+            Quality++;
+    }
+
+    private void DecrementQuality()
+    {
+        if (Quality > 0)
+            Quality--;
+    }
+
+    private string InputCss(QrContentType type)
+    => (!isInputValid && SelectedType == type) ? "input-error" : "";
+
+    private RenderFragment ErrorMsg(QrContentType type) => builder =>
+    {
+        if (!isInputValid && SelectedType == type && !string.IsNullOrEmpty(errorMsg))
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "error-msg");
+            builder.AddContent(2, errorMsg);
+            builder.CloseElement();
+        }
+    };
+
+    // Mensajes de error centralizados
+    private void ValidateInputs()
+    {
+        errorMsg = "";
+        isInputValid = false;
+        qrGenerado = false;
+
+        switch (SelectedType)
+        {
+            case QrContentType.Link:
+                isInputValid = QrValidators.IsValidUrl(LinkUrl);
+                if (!isInputValid) errorMsg = ErrorMessages["InvalidUrl"];
+                break;
+
+            case QrContentType.Text:
+                isInputValid = !string.IsNullOrWhiteSpace(TextContent);
+                if (!isInputValid) errorMsg = ErrorMessages["RequiredField"];
+                break;
+
+            case QrContentType.Email:
+                isInputValid = QrValidators.IsValidEmail(EmailTo);
+                if (!isInputValid) errorMsg = ErrorMessages["InvalidEmail"];
+                else if (string.IsNullOrWhiteSpace(EmailSubject) && string.IsNullOrWhiteSpace(EmailBody))
+                {
+                    isInputValid = false;
+                    errorMsg = ErrorMessages["MissingEmailContent"];
+                }
+                break;
+
+            case QrContentType.Call:
+                isInputValid = QrValidators.IsValidPhone(Phone);
+                if (!isInputValid) errorMsg = ErrorMessages["InvalidPhone"];
+                break;
+
+            case QrContentType.SMS:
+                isInputValid = QrValidators.IsValidPhone(SmsPhone) && !string.IsNullOrWhiteSpace(SmsMessage);
+                if (!QrValidators.IsValidPhone(SmsPhone)) errorMsg = ErrorMessages["InvalidPhone"];
+                else if (string.IsNullOrWhiteSpace(SmsMessage)) errorMsg = ErrorMessages["MissingSmsMessage"];
+                break;
+
+            case QrContentType.VCard:
+                isInputValid = !string.IsNullOrWhiteSpace(VCardFirstName)
+                            && !string.IsNullOrWhiteSpace(VCardLastName)
+                            && QrValidators.IsValidPhone(VCardPhone)
+                            && QrValidators.IsValidEmail(VCardEmail);
+                if (!isInputValid) errorMsg = ErrorMessages["InvalidVCard"];
+                break;
+
+            case QrContentType.WhatsApp:
+                isInputValid = QrValidators.IsValidPhone(WhatsAppPhone);
+                if (!isInputValid) errorMsg = ErrorMessages["InvalidWhatsApp"];
+                break;
+
+            case QrContentType.WiFi:
+                isInputValid = !string.IsNullOrWhiteSpace(WiFiSSID)
+                            && (!string.IsNullOrWhiteSpace(WiFiPassword) || WiFiEncryption == "nopass");
+                if (!isInputValid) errorMsg = ErrorMessages["InvalidWiFi"];
+                break;
+
+            case QrContentType.PDF:
+                isInputValid = QrValidators.IsValidUrl(PdfUrl);
+                if (!isInputValid) errorMsg = ErrorMessages["InvalidUrl"];
+                break;
+
+            case QrContentType.App:
+                isInputValid = QrValidators.IsValidUrl(AppUrl);
+                if (!isInputValid) errorMsg = ErrorMessages["InvalidUrl"];
+                break;
+
+            case QrContentType.Images:
+                isInputValid = QrValidators.IsValidUrl(ImageUrl);
+                if (!isInputValid) errorMsg = ErrorMessages["InvalidUrl"];
+                break;
+
+            case QrContentType.Video:
+                isInputValid = QrValidators.IsValidUrl(VideoUrl);
+                if (!isInputValid) errorMsg = ErrorMessages["InvalidUrl"];
+                break;
+
+            case QrContentType.SocialMedia:
+                isInputValid = QrValidators.IsValidUrl(SocialUrl);
+                if (!isInputValid) errorMsg = ErrorMessages["InvalidUrl"];
+                break;
+
+            case QrContentType.Event:
+                isInputValid = !string.IsNullOrWhiteSpace(EventTitle)
+                            && !string.IsNullOrWhiteSpace(EventLocation)
+                            && !string.IsNullOrWhiteSpace(EventStart)
+                            && !string.IsNullOrWhiteSpace(EventEnd);
+                if (!isInputValid) errorMsg = ErrorMessages["InvalidEvent"];
+                break;
+
+            case QrContentType.Barcode2D:
+                isInputValid = !string.IsNullOrWhiteSpace(Barcode2DContent);
+                if (!isInputValid) errorMsg = ErrorMessages["RequiredField"];
+                break;
+        }
+    }
+        
+    private readonly Dictionary<string, string> ErrorMessages = new()
+    {
+        { "InvalidUrl", "La URL ingresada no es válida" },
+        { "InvalidEmail", "El correo electrónico no es válido" },
+        { "MissingEmailContent", "Debes añadir un asunto o mensaje en el correo" },
+        { "InvalidPhone", "El número de teléfono no es válido" },
+        { "MissingSmsMessage", "Debes escribir un mensaje para el SMS" },
+        { "InvalidVCard", "Nombre, apellido, teléfono y correo son obligatorios y deben ser válidos" },
+        { "InvalidWhatsApp", "El número de WhatsApp no es válido" },
+        { "InvalidWiFi", "SSID y contraseña requeridos (o selecciona 'Sin contraseña')" },
+        { "InvalidEvent", "Todos los campos del evento son obligatorios" },
+        { "RequiredField", "Este campo no puede estar vacío" }
+    };
+
+    private void ToggleSidebarTypes()
+    {
+        showAllTypes = !showAllTypes;
+        ShowTooltip = false;
+    }
+
+    [JSInvokable]
+    public void UpdateScreenWidth(int width)
+    {
+        windowWidth = width;
+        UpdateVisibleTypesCount();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateVisibleTypesCount()
+    {
+        if (windowWidth < 600)
+            visibleTypesCount = 4;
+        else if (windowWidth < 900)
+            visibleTypesCount = 5;
+        else if (windowWidth < 1200)
+            visibleTypesCount = 7;
+        else if (windowWidth < 1600)
+            visibleTypesCount = 8;
+        else
+            visibleTypesCount = 10;
+    }
+
+    private string expandedSection = "datos"; // por defecto abre la sección de datos
+
+    private void ToggleSection(string section)
+    {
+        // Si haces click, alterna entre abrir y cerrar
+        if (expandedSection == section)
+            expandedSection = "";
+        else
+            expandedSection = section;
+    }
+
+
+    private readonly Dictionary<EyeFrameShape, bool> FrameRequiresFixedCenter = new()
+    {
+        { EyeFrameShape.Leaf, true },
+        { EyeFrameShape.Diamond, true },
+        { EyeFrameShape.CircleInSquare, false },
+        { EyeFrameShape.CornerRoundOut, false },
+        { EyeFrameShape.CornerRect, false },
+        { EyeFrameShape.TwoCornerRect, false },
+        { EyeFrameShape.CornerRectRadio, false },
+        { EyeFrameShape.TwoCornerRectIn, false },
+    };
+
+    private bool isSidebarOpen = false;
+
+    private void ToggleSidebar()
+    {
+        isSidebarOpen = !isSidebarOpen;
+    }
+
+    private void OnCorrectionLevelChanged(ChangeEventArgs e)
+    {
+        if (!HasValidContent())
+        {
+            ShowDesignError("⚠️ Ingresa primero los datos del QR antes de cambiar la corrección de error.");
+            return;
+        }
+        else
+        {
+            HideDesignError();
+        }
+
+        if (Enum.TryParse<QrCorrectionLevel>(e.Value?.ToString(), out var newLevel))
+        {
+            qrOptions.CorrectionLevel = newLevel;
+            UpdateOptions();
+        }
+    }
+
+
+    private void OnQualityChanged(ChangeEventArgs e)
+    {
+        if (!HasValidContent())
+        {
+            ShowDesignError("⚠️ Ingresa primero los datos del QR antes de cambiar la calidad.");
+            return;
+        }
+        else
+        {
+            HideDesignError();
+        }
+
+        if (int.TryParse(e.Value?.ToString(), out var newQuality))
+        {
+            qrOptions.Quality = newQuality;
+            UpdateOptions();
+        }
+    }
+
+    private void DebouncedUpdate()
+    {
+        debounceTimer?.Dispose(); // cancelar si ya había uno
+
+        debounceTimer = new System.Threading.Timer(_ =>
+        {
+            InvokeAsync(() =>
+            {
+                UpdateOptions(); // el que ya refresca el QR
+                //StateHasChanged();
+            });
+        }, null, 200, Timeout.Infinite); // ⏱️ espera 200ms
+    }
+
+    public void Dispose()
+    {
+        debounceTimer?.Dispose();
+    }
+
+
+    private bool HasValidContent()
+    {
+        return !string.IsNullOrWhiteSpace(qrOptions.Content);
+    }
+
+
+    private void ShowDesignError(string message)
+    {
+        toastMessage = message;
+        showToastColor = true;
+        StateHasChanged();
+    }
+
+    private void HideDesignError()
+    {
+        toastMessage = String.Empty;
+        showToastColor = false;
+        StateHasChanged();
+    }
+}

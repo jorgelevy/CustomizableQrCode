@@ -1,4 +1,5 @@
 using CustomizableQrCode.DemoBlazor.Components;
+using CustomizableQrCode.Models;
 
 namespace CustomizableQrCode.DemoBlazor
 {
@@ -11,6 +12,7 @@ namespace CustomizableQrCode.DemoBlazor
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+            builder.Services.AddScoped<QrState>();
 
             var app = builder.Build();
 

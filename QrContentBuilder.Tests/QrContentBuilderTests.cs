@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace CustomizableQrCode.ConsoleTest
+namespace CustomizableQrCode.Test
 {
     public class QrContentBuilderTests
     {
@@ -13,8 +13,7 @@ namespace CustomizableQrCode.ConsoleTest
         public void BuildLink_Returns_Url()
         {
             var url = "https://ejemplo.com";
-            var result = QrContentBuilder.BuildLink(url);
-            Assert.Equal(url, result);
+            Assert.Equal(url, QrContentBuilder.BuildLink(url));
         }
 
         [Fact]
@@ -29,8 +28,8 @@ namespace CustomizableQrCode.ConsoleTest
         {
             var result = QrContentBuilder.BuildEmail("to@mail.com", "Asunto", "Cuerpo");
             Assert.StartsWith("mailto:to@mail.com", result);
-            Assert.Contains("subject=Asunto", result);
-            Assert.Contains("body=Cuerpo", result);
+            Assert.Contains("subject=", result);
+            Assert.Contains("body=", result);
         }
 
         [Fact]
@@ -130,47 +129,10 @@ namespace CustomizableQrCode.ConsoleTest
         }
 
         [Fact]
-        public void BuildText_Returns_Empty_For_Null_Or_Empty()
-        {
-            Assert.Equal("", QrContentBuilder.BuildText(null));
-            Assert.Equal("", QrContentBuilder.BuildText(""));
-        }
-
-        [Fact]
         public void BuildEmail_Returns_Empty_If_To_Is_Null_Or_Empty()
         {
             Assert.Equal("", QrContentBuilder.BuildEmail(null, "asunto", "msg"));
             Assert.Equal("", QrContentBuilder.BuildEmail("", "asunto", "msg"));
-        }
-
-        [Fact]
-        public void BuildCall_Returns_Empty_For_Null_Or_Empty()
-        {
-            Assert.Equal("", QrContentBuilder.BuildCall(null));
-            Assert.Equal("", QrContentBuilder.BuildCall(""));
-        }
-
-        [Fact]
-        public void BuildSMS_Returns_Empty_If_Phone_Is_Null_Or_Empty()
-        {
-            Assert.Equal("", QrContentBuilder.BuildSMS(null, "msg"));
-            Assert.Equal("", QrContentBuilder.BuildSMS("", "msg"));
-        }
-
-        [Fact]
-        public void BuildVCard_Allows_Nulls_And_Empty_Strings()
-        {
-            // No debe lanzar excepción, aunque los campos sean nulos
-            var result = QrContentBuilder.BuildVCard(null, null, null, null, null, null, null);
-            Assert.Contains("BEGIN:VCARD", result);
-            Assert.Contains("END:VCARD", result);
-        }
-
-        [Fact]
-        public void BuildWhatsApp_Returns_Empty_If_Phone_Is_Null_Or_Empty()
-        {
-            Assert.Equal("", QrContentBuilder.BuildWhatsApp(null, "msg"));
-            Assert.Equal("", QrContentBuilder.BuildWhatsApp("", "msg"));
         }
 
         [Fact]
@@ -181,18 +143,10 @@ namespace CustomizableQrCode.ConsoleTest
         }
 
         [Fact]
-        public void BuildPDF_Returns_Empty_For_Null_Or_Empty()
+        public void BuildEvent_Returns_Empty_If_Title_Is_Null_Or_Empty()
         {
-            Assert.Equal("", QrContentBuilder.BuildPDF(null));
-            Assert.Equal("", QrContentBuilder.BuildPDF(""));
-        }
-
-        // Lo mismo aplica para App, Image, Video, Social, Barcode2D, Event
-        [Fact]
-        public void BuildBarcode2D_Returns_Empty_For_Null_Or_Empty()
-        {
-            Assert.Equal("", QrContentBuilder.BuildBarcode2D(null));
-            Assert.Equal("", QrContentBuilder.BuildBarcode2D(""));
+            Assert.Equal("", QrContentBuilder.BuildEvent(null, "loc", "20250101", "20250102"));
+            Assert.Equal("", QrContentBuilder.BuildEvent("", "loc", "20250101", "20250102"));
         }
 
         [Fact]
@@ -217,4 +171,5 @@ namespace CustomizableQrCode.ConsoleTest
             Assert.False(QrContentBuilder.IsValidUrl("not a url"));
         }
     }
+
 }

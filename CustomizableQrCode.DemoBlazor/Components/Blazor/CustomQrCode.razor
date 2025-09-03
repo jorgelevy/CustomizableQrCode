@@ -2,22 +2,23 @@
 @using static CustomizableQrCode.Models.QrModels
 
 @code {
-    [Parameter] public string Content { get; set; }
-    [Parameter] public string ModuleColor { get; set; }
-    [Parameter] public string EyeFrameColor { get; set; }
-    [Parameter] public string EyeCenterColor { get; set; }
-    [Parameter] public string BackgroundGradient { get; set; }
-    [Parameter] public int Size { get; set; }
-    [Parameter] public string LogoBase64 { get; set; }
+    // [Parameter] public string Content { get; set; }
+    // [Parameter] public string ModuleColor { get; set; }
+    // [Parameter] public string EyeFrameColor { get; set; }
+    // [Parameter] public string EyeCenterColor { get; set; }
+    // [Parameter] public string BackgroundGradient { get; set; }
+    // [Parameter] public int Size { get; set; }
+    // [Parameter] public string LogoBase64 { get; set; }
 
-    [Parameter] public string ModuleShapeStr { get; set; }
-    [Parameter] public string EyeFrameShapeStr { get; set; }
-    [Parameter] public string EyeCenterShapeStr { get; set; }
-    [Parameter] public string ExportFormatStr { get; set; }
-    [Parameter] public string CorrectionLevelStr { get; set; }
+    // [Parameter] public string ModuleShapeStr { get; set; }
+    // [Parameter] public string EyeFrameShapeStr { get; set; }
+    // [Parameter] public string EyeCenterShapeStr { get; set; }
+    // [Parameter] public string ExportFormatStr { get; set; }
+    // [Parameter] public string CorrectionLevelStr { get; set; }
 
     [Parameter]
     public QrCodeOptions QrOptions { get; set; } = new QrCodeOptions();
+
     [Parameter]
     public EventCallback<string> OnSvgGenerated { get; set; }
 
@@ -42,7 +43,7 @@
         eyeCenterShape = EnforceEyeCenterShapeRestriction(eyeFrameShape, eyeCenterShape);
 
         var qr = new QrCodeBuilder()
-            .WithContent(QrOptions.Content ?? "https://midominio.com")
+            .WithContent(QrOptions.Content ?? "https://qrbox.com.mx/")
             .WithModuleShape(moduleShape)
             .WithModuleColor(QrOptions.ModuleColor ?? "#4a90e2")
             .WithEyeFrameShape(eyeFrameShape)
@@ -111,7 +112,7 @@
 
 @if (!string.IsNullOrWhiteSpace(SvgContent))
 {
-    <div style="width:@Size" @key="Content">
+    <div style="width:@QrOptions.Size" @key="QrOptions.Content">
         @((MarkupString)SvgContent)
     </div>
 }

@@ -1,0 +1,1963 @@
+﻿:root {
+    /* 🎨 Paleta de colores */
+    --primary-color: #0FBF9F; /* Verde principal */
+    --primary-color-hover: #0aa88b;
+    --secondary-color: #0ea5e9;
+    --secondary-color-hover: #0284c7;
+    --text-light: #ffffff;
+    --text-dark: #1f2937;
+    --bg-light: #f9fafb;
+    --bg-section: #ecfeff;
+    --border-light: #e5e7eb;
+    --font-primary: 'Poppins', sans-serif;
+}
+
+/* ===== HEADER ===== */
+.main-header {
+    background: var(--primary-color);
+/*    padding: 12px 40px;*/
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 3000; /* 🔥 más alto que overlay y menú cerrado */
+}
+
+.glass-header {
+    background: rgba(15, 191, 159, 0.95);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-light);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1280px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* LOGO */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text-light);
+}
+
+.logo-text {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-left: 8px;
+    color: var(--text-light);
+}
+
+/* ===== NAV DESKTOP ===== */
+.nav-menu {
+    display: flex;
+    gap: 24px;
+}
+
+.nav-menu a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-weight: 600;
+    position: relative;
+    padding: 6px 14px;
+}
+
+.nav-menu a::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--text-light);
+    transition: width 0.3s ease;
+}
+
+.nav-menu a:hover::after {
+    width: 100%;
+}
+
+.btn-nav {
+    /*background: var(--text-light);*/
+    color: var(--text-light) !important;
+    padding: 6px 14px;
+    border-radius: 20px;
+}
+
+/*.btn-nav:hover {
+    background: var(--primary-color-hover);
+    color: var(--text-light) !important;
+}*/
+
+/* ===== BURGER (móvil) ===== */
+.burger {
+    display: none;
+    font-size: 1.8rem;
+    background: none;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+}
+
+/* ===== MENU MÓVIL TOP-DOWN ===== */
+.mobile-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: var(--primary-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    transform: translateY(-100%); /* 🔥 animación suave */
+    opacity: 0;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    z-index: 2000; /* más bajo que el header */
+}
+
+.mobile-menu.active {
+    transform: translateY(0);
+    opacity: 1;
+    z-index: 4000; /* ahora sí encima de todo */
+}
+
+/* Estilo de links con animación escalonada */
+.mobile-menu a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-size: 1.6rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.mobile-menu.active a {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.mobile-menu.active a:nth-child(2) {
+    transition-delay: 0.1s;
+}
+
+.mobile-menu.active a:nth-child(3) {
+    transition-delay: 0.2s;
+}
+
+.mobile-menu.active a:nth-child(4) {
+    transition-delay: 0.3s;
+}
+
+/* Botón cerrar */
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 2rem;
+    color: var(--text-light);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Overlay */
+.menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 2500; /* entre el header y el menú activo */
+}
+
+.menu-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ===== HERO SECTION ===== */
+.hero {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background-size: 300% 300%;
+    animation: gradientMove 12s linear infinite alternate;
+    color: var(--text-light);
+    padding: 30px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@keyframes gradientMove {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.hero-grid {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 1rem;
+    max-width: 1200px;
+    width: 100%;
+    align-items: flex-start;
+}
+
+/* 🔥 El título abarca las 2 columnas */
+.hero-grid > h1 {
+    color: #fff; /* fallback para accesibilidad */
+    grid-column: 1 / -1;
+    text-align: center;
+    font-family: var(--font-primary);
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    position: relative;
+    display: inline-block;
+    background: linear-gradient(90deg, #fff, #e0fdfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-grid > h1::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, #fff, #e0fdfa);
+    border-radius: 2px;
+    animation: underlineFlow 2.5s linear infinite;
+}
+
+@keyframes underlineFlow {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes expandLine {
+    from {
+        width: 0;
+        opacity: 0;
+    }
+
+    to {
+        width: 80px;
+        opacity: 1;
+    }
+}
+
+/* Grid de tipos de QR */
+.selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+
+/* === Columna derecha: Beneficios === */
+.hero-info h2 {
+    margin-bottom: 1rem;
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.benefits {
+    list-style: none; /* Quitar bullets */
+    padding: 0;
+    margin: 0;
+}
+
+.benefits li {
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+}
+
+/* Desktop: siempre visible */
+.accordion-toggle {
+    display: none;
+}
+
+.accordion-content {
+    max-height: none;
+    overflow: visible;
+}
+
+/* ==============================
+   LAYOUT PRINCIPAL
+   ============================== */
+.qr-main-content {
+    display: grid; /* Usamos grid para dividir en columnas */
+    grid-template-columns: 70% 30%; /* 70% contenido (izquierda), 30% vista previa (derecha) */
+    gap: 50px; /* Espacio entre columnas */
+    align-items: flex-start; /* Alinear arriba ambas columnas */
+}
+
+/* Mantener la vista previa fija en desktop */
+.qr-preview-panel {
+    position: sticky; /* Se mantiene visible al hacer scroll */
+    top: 100px; /* Distancia desde la parte superior */
+}
+
+
+/* Estilo base de cada tarjeta de opción */
+.selector-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 10px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.1); /* fondo translúcido sobre gradiente */
+    border: 2px solid transparent;
+    color: #fff; /* texto/ícono blancos */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    gap: 0.4rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Icono dentro de la tarjeta */
+.selector-item i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    transition: transform 0.3s ease;
+    color: #fff; /* íconos blancos */
+}
+
+/* Hover: resaltar tarjeta */
+.selector-item:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: #fff;
+    transform: translateY(-4px);
+}
+
+/* Estado activo (seleccionado) */
+.selector-item.active {
+    background: var(--primary-color); /* Fondo principal */
+    color: #fff; /* Texto blanco */
+    transform: scale(1.02);
+    box-shadow: 0 0 12px rgba(14,165,233,0.5);
+    border: 2px solid var(--secondary-color);
+}
+
+.selector-item.active i {
+    color: #fff; /* ya está, pero puedes usar negro si prefieres más contraste */
+}
+
+.qr-toast-warning {
+    background-color: #fffae6;
+    color: #8a6d3b;
+    padding: 12px;
+    margin: 8px 0;
+    /*    border-left: 5px solid #f0ad4e;*/
+    border-radius: 6px;
+    font-size: 13px;
+    box-shadow: 0 0 10px rgba(0,0,0,.1);
+}
+
+.error-msg {
+    background-color: #ffe5e5;
+    color: #d8000c;
+    padding: 12px;
+    margin: 8px 0;
+/*    border-left: 6px solid #d8000c;*/
+    border-radius: 6px;
+    font-size: 13px;
+    box-shadow: 0 2px 8px rgba(216, 0, 12, 0.25); /* sombra rojiza */
+}
+
+/* Animación para dar más notoriedad */
+@keyframes pulseError {
+    0% {
+        box-shadow: 0 0 8px rgba(216,0,12,0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 16px rgba(216,0,12,0.8);
+    }
+
+    100% {
+        box-shadow: 0 0 8px rgba(216,0,12,0.5);
+    }
+}
+
+/* ==============================
+   VISTA PREVIA DEL QR
+   ============================== */
+.qr-preview-card {
+/*    background: #fff;*/
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px auto 0;
+    max-width: 420px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Aplica al primer div hijo dentro de la tarjeta */
+.qr-preview-card > div:first-of-type {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100% !important; /* 🔹 anula el width:0 inline */
+    min-height: 260px;
+    margin-bottom: 14px;
+    flex: 1;
+}
+
+/* SVG QR */
+.qr-preview-card svg {
+    display: block;
+    width: auto;
+    height: auto;
+    margin: 0 auto 16px auto; /* más aire antes de botones */
+    border-radius:15%;
+}
+
+/* Título de la vista previa */
+.qr-preview-card h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid #f1f1f1;
+    padding-bottom: 6px;
+    color: var(--text-light);
+}
+
+.qr-preview-card h4 i {
+    font-size: 1.2rem;
+    color: var(--text-light);
+}
+
+
+.qr-preview-card img {
+    animation: fadeInScale 0.5s ease;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ==============================
+   BOTONES DE DESCARGA
+   ============================== */
+.download-buttons {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 10px;
+    /*    margin-top: 30px;*/
+    padding-top: 15px;
+    border-top: 1px solid #e5e7eb;
+    max-width: 400px;
+    margin: 30px auto 0; /* centrado bajo el QR */
+}
+
+/* Estilo base de los botones */
+.download-buttons button {
+    background: var(--primary-color); /* Color de marca */
+    color: #fff; /* Texto blanco */
+    border: none; /* Sin borde */
+    padding: 10px 16px; /* Tamaño cómodo */
+    border-radius: 10px; /* Bordes redondeados */
+    font-size: 0.9rem; /* Tamaño de texto medio */
+    display: flex; /* Ícono + texto alineados */
+    align-items: center;
+    gap: 6px; /* Espacio entre ícono y texto */
+    cursor: pointer; /* Manita al pasar */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+    justify-content: center;
+    flex: 1; /* se reparten el espacio */
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+.download-buttons button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+/* PNG (azul del sitio) */
+.download-buttons .png {
+    background: var(--secondary-color);
+}
+
+.download-buttons .png:hover {
+    background: var(--secondary-color-hover);
+}
+
+/* SVG (verde del sitio) */
+.download-buttons .svg {
+    background: var(--primary-color);
+}
+
+.download-buttons .svg:hover {
+    background: var(--primary-color-hover);
+}
+
+/* PDF (rojo suave, consistente) */
+.download-buttons .pdf {
+    background: #ef4444;
+}
+
+.download-buttons .pdf:hover {
+    background: #dc2626;
+}
+
+/* ===== FOOTER ===== */
+.main-footer {
+    background: var(--primary-color);
+    padding: 25px 40px;
+    text-align: center;
+    font-size: 1rem;
+    color: var(--text-light);
+}
+
+.glass-footer {
+    background: rgba(15, 191, 159, 0.95);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.footer-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.footer-text {
+    margin: 0;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+.footer-links {
+    margin-top: 8px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.footer-links a {
+    color: var(--text-light);
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+}
+
+.footer-links a:hover {
+    opacity: 0.85;
+}
+
+/* ===== BOTONES GENERALES ===== */
+.btn-main {
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    color: var(--text-light);
+    font-size: 1rem;
+    font-weight: 600;
+    background-size: 200% 100%;
+    transition: background-position 0.4s ease;
+}
+
+.btn-main:hover {
+    background: var(--primary-color-hover);
+    background-position: right center;
+}
+
+/* ===== ACCORDION CON ESTILO CARD ===== */
+.qr-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+/* Item del acordeón */
+.qr-accordion-item {
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+/* Header */
+.qr-accordion-header {
+    width: 100%;
+    background: #f9fafb; /* 🔥 Fondo claro estilo card */
+    color: var(--text-dark);
+    font-weight: 600;
+    padding: 16px 18px;
+    font-size: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.qr-accordion-header:hover {
+    background: #f3f4f6;
+}
+
+.qr-accordion-item.active .qr-accordion-header {
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    color: #fff;
+}
+
+/* Flecha */
+.qr-accordion-header .arrow {
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform 0.3s ease;
+}
+
+.qr-accordion-item.active .qr-accordion-header .arrow {
+    transform: rotate(-135deg);
+}
+
+/* Body */
+.qr-accordion-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.3s ease;
+    padding: 0 18px;
+    background: #fff;
+}
+
+.qr-accordion-item.active .qr-accordion-body {
+    max-height: 1200px;
+    padding: 20px 18px 25px;
+}
+
+.step-header {
+    display: flex;
+    justify-content: space-between; /* título a la izquierda, tipo a la derecha */
+    align-items: center;
+    margin-bottom: 18px; /* igual que step-title */
+}
+
+.step-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 18px;
+}
+
+.qr-selected-type-label {
+    display: inline-flex;
+    align-items: center;
+    background: #ffffff22;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-weight: 600;
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.qr-selected-type-label i {
+    margin-right: 6px;
+    font-size: 1rem;
+}
+
+
+.qr-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0 30px;
+    font-family: var(--font-primary);
+}
+
+.qr-steps .step {
+    text-align: center;
+    flex: 1;
+    position: relative;
+}
+
+.qr-steps .step-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    margin: 0 auto 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: var(--text-light);
+    background: var(--border-light);
+    transition: all 0.3s ease;
+}
+
+.qr-steps .step-label {
+    font-size: 0.85rem;
+    color: var(--text-dark);
+}
+
+.qr-steps .step-line {
+    flex: 0.3;
+    height: 3px;
+    background: var(--border-light);
+    margin: 0 10px;
+    border-radius: 3px;
+}
+
+.qr-steps .step.active .step-circle {
+    background: var(--primary-color);
+}
+
+.qr-steps .step.completed .step-circle {
+    background: var(--secondary-color);
+}
+
+.qr-steps .step.completed .step-label {
+    color: var(--secondary-color-hover);
+}
+
+
+/* Campos */
+
+.qr-config-fields div{
+    padding: 3px;
+}
+/* Inputs y selects dentro del acordeón */
+.qr-config-fields .qr-input,
+.qr-config-fields .qr-textarea,
+.qr-config-fields .qr-select {
+    width: 100%; /* Siempre al 100% del grid asignado */
+    max-width: 100%; /* 🔥 No salirse nunca del contenedor */
+    box-sizing: border-box; /* Incluye padding y borde dentro del ancho */
+    padding: 10px 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: var(--font-primary);
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    /*background: #fff;*/
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.qr-config-fields .qr-input:focus,
+.qr-config-fields .qr-textarea:focus,
+.qr-config-fields .qr-select:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(14,165,233,0.15);
+}
+
+.qr-config-fields .qr-input:hover,
+.qr-config-fields .qr-textarea:hover,
+.qr-config-fields .qr-select:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 0 4px rgba(0,0,0,0.05);
+}
+
+
+.wizard-actions {
+    display: flex;
+    justify-content: space-between; /* en desktop los separa a los extremos */
+    align-items: center;
+    gap: 16px;
+    margin-top: 40px;
+    flex-wrap: wrap; /* que en móviles se acomoden uno debajo del otro */
+}
+
+.wizard-actions .btn {
+    padding: 14px 28px;
+    border-radius: 12px; /* pill más moderno */
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.btn-back {
+    background: #f9fafb;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+.btn-back:hover {
+    background: #f3f4f6;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+}
+
+.btn-generate {
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    cursor: pointer;
+    padding: 1rem 2.5rem;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 12px;
+    color: var(--text-light);
+    transition: all 0.3s;
+}
+
+.btn-generate:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+}
+
+
+.qr-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.qr-tabs .tab {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* espacio entre ícono y texto */
+    background: #f1f1f1;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all .2s ease;
+    font-size: 0.95rem;
+}
+
+.qr-tabs .tab:hover {
+    background: #e5e7eb;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+
+.qr-tabs .tab i {
+    font-size: 1rem;
+    color: var(--primary-color);
+}
+
+.qr-tabs .tab.active i {
+    color: white;
+}
+
+.qr-tabs .tab.active {
+    background: var(--primary-color, #00bfa5);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.qr-tab-content {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.qr-tab-content .qr-config-fields {
+    margin-bottom: 16px;
+}
+
+
+/* ===== FILE INPUT CUSTOM ===== */
+.qr-file {
+    display: none; /* Ocultamos el input real */
+}
+
+.qr-file-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    color: #fff;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.qr-file-label:hover {
+    background: var(--primary-color-hover);
+    transform: translateY(-2px);
+}
+
+.qr-file-label i {
+    font-size: 1.1rem;
+}
+
+/* Texto del archivo seleccionado */
+.qr-file-name {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--text-dark);
+    opacity: 0.7;
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px; /* Ajusta según tu diseño */
+}
+
+.qr-logo-preview {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.qr-logo-preview img {
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    object-fit: contain;
+}
+
+.qr-option-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+    gap: 12px;
+    justify-items: center;
+    margin-top: 12px;
+}
+
+/* ========================================
+   BASE (tu código actual, mantenido como default)
+   ======================================== */
+.qr-shape-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+    gap: 14px;
+    padding: 12px;
+    justify-items: center;
+}
+
+.qr-shape-btn {
+    width: 58px;
+    height: 58px;
+    border-radius: 25%;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08), inset -2px -2px 4px rgba(255, 255, 255, 0.9), inset 2px 2px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    margin: 6px;
+    position: relative;
+}
+
+.qr-shape-btn:hover {
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.12), inset -2px -2px 4px rgba(255, 255, 255, 0.9), inset 2px 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.qr-shape-btn.selected {
+    border: 2px solid transparent;
+    background: linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #3b82f6, #06b6d4) border-box;
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+    transform: scale(1.1);
+}
+
+.qr-shape-btn img,
+.qr-shape-btn svg {
+    width: 75%;
+    height: 75%;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+.qr-shape-btn:hover img {
+    transform: scale(1.15);
+}
+
+/* Tooltip */
+.qr-shape-btn[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -28px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0.9;
+}
+
+
+/* ========================================
+   VARIANTE 1: GLASSMORPHISM
+   ======================================== */
+.style-glass .qr-shape-btn {
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.style-glass .qr-shape-btn.selected {
+    background: linear-gradient(145deg, #0FBF9F, #0ea5e9);
+    border: none;
+    color: #fff;
+    box-shadow: 0 0 18px rgba(15,191,159,0.8);
+}
+
+/* ============================================================
+   RESPONSIVE OPTIMIZADO - SIN ROMPER DESKTOP
+   ============================================================ */
+/* Ajustar altura en desktop */
+@media (min-width: 1024px) {
+    .qr-preview-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; /* mantiene título, QR, botones equilibrados */
+    }
+}
+
+/* Tablet y menor → una sola columna en el layout */
+@media (max-width: 1024px) {
+    /* Layout en una sola columna */
+    .qr-main-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .qr-preview-panel {
+        position: relative;
+        margin-top: 20px;
+    }
+
+    /* Hero */
+    .hero {
+        padding: 40px 16px;
+        text-align: center;
+    }
+
+    .hero h1 {
+        font-size: clamp(1.4rem, 3vw, 2rem);
+    }
+
+    .hero-grid {
+        grid-template-columns: 3fr 1fr; 
+        /*grid-template-columns: 1fr minmax(200px, 300px);*/
+        gap: 1.5rem;
+    }
+
+    .qr-steps .step-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    /* Selector */
+    .selector-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+    }
+    .selector-item {
+        /*flex: 1 1 calc(33.333% - 8px);*/ /* 3 por fila */
+        /*max-width: calc(33.333% - 8px);*/
+        padding: 10px 6px; /* menos padding */
+        font-size: 0.8rem; /* texto más compacto */
+    }
+
+    .selector-item i {
+        font-size: 1.4rem;
+    }
+
+    /* Preview QR */
+    .qr-preview-card {
+        margin-top: 20px;
+        padding: 18px 16px;
+    }
+
+    .qr-preview-card h4 {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+
+    .qr-preview-card img {
+        max-width: 280px;
+    }
+
+    .download-buttons {
+        justify-content: center;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    /* Footer */
+    .main-footer {
+        padding: 14px 16px;
+        font-size: 0.9rem;
+    }
+
+    .footer-links {
+        justify-content: center;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 1023px) and (min-width: 768px) {
+    .hero-grid {
+        display: grid;
+        grid-template-columns: 1fr minmax(220px,340px);
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    /* ==== Botones QR compactos ==== */
+    .selector-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px; /* 🔥 menos espacio */
+    }
+
+    .selector-item {
+        flex: 1 1 calc(33.333% - 8px);
+        max-width: calc(33.333% - 8px);
+        padding: 10px 6px; /* menos padding */
+        font-size: 0.8rem; /* texto más compacto */
+    }
+
+    .selector-item i {
+        font-size: 1.4rem; /* íconos más pequeños */
+        margin-bottom: 4px;
+    }
+
+    /* ==== Ajustar títulos y pasos ==== */
+    .step-title {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+
+    .qr-steps {
+        margin: 10px 0 20px;
+    }
+
+    .qr-steps .step-circle {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+
+    /* ==== Preview más proporcional ==== */
+    .qr-preview-card {
+        max-width: 340px;
+        padding: 16px 12px;
+    }
+
+    .qr-preview-card h4 {
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+
+    .download-buttons {
+        gap: 6px;
+        margin-top: 10px;
+    }
+
+    .download-buttons button {
+        font-size: 0.85rem;
+        padding: 8px 10px;
+    }
+}
+
+/*
+@media (max-width: 900px) {
+    .selector-item {
+        padding: 1rem;
+    }
+
+    .hero-grid > h1 {
+        font-size: 2.2rem;
+        margin-bottom: 30px;
+    }
+}*/
+
+
+/* 📱 Optimización específica para tablets medianos (768–850px) */
+@media (min-width: 768px) and (max-width: 850px) {
+
+    .nav-menu {
+        display: none;
+    }
+
+    .burger {
+        display: block;
+    }
+
+    .hero {
+        padding: 40px 14px;
+    }
+
+    .hero h1 {
+        font-size: clamp(1.4rem, 4.5vw, 2rem);
+        margin-bottom: 16px;
+    }
+
+    .hero p {
+        font-size: 0.95rem;
+        line-height: 1.35;
+        margin-bottom: 12px;
+    }
+
+
+    .hero-grid {
+        grid-template-columns: 1fr 340px; /* preview un poco más compacta */
+        gap: 0.8rem; /* menos separación */
+        align-items: start;
+    }
+
+    /* Ajuste de cards */
+    .selector-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px; /* 🔥 menos espacio entre botones */
+        justify-content: flex-start;
+    }
+
+    .selector-item {
+        flex: 1 1 calc(33.333% - 8px);
+        max-width: calc(33.333% - 8px);
+        padding: 10px 6px; /* menos padding */
+        font-size: 0.8rem; /* texto más compacto */
+    }
+
+    .selector-item i {
+        font-size: 1.4rem;
+    }
+
+    /* Paso y título */
+    .step-title {
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+    }
+
+    .qr-steps {
+        margin: 12px 0 18px;
+    }
+
+    /* Preview QR más ajustada */
+    .qr-preview-card {
+        margin-top: 30px;
+        padding: 18px 16px;
+    }
+
+    .qr-preview-card h4 {
+        font-size: 1rem;
+        margin-bottom: 12px;
+    }
+
+    .qr-config-fields .qr-input,
+    .qr-config-fields .qr-textarea,
+    .qr-config-fields .qr-select {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+
+    /* Botones wizard */
+    .wizard-actions {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 24px;
+    }
+
+    .wizard-actions .btn {
+        font-size: 0.95rem;
+        padding: 10px 14px;
+    }
+
+    .accordion-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: var(--primary-color);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        margin: 12px 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        transition: all 0.3s ease;
+    }
+
+    .accordion-toggle:hover {
+        background: var(--primary-color-hover);
+        transform: translateY(-2px);
+    }
+
+    /* 🔹 Grid colapsable: en mobile inicia oculto */
+    .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: max-height 0.3s ease, opacity 0.3s ease;
+    }
+
+    /* 🔹 Cuando está activo */
+    .accordion-content.active {
+        max-height: 1500px; /* suficiente para todas las cards */
+        opacity: 1;
+        margin-top: 12px;
+    }
+}
+
+
+
+@media (max-width: 768px) {
+    .accordion-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: var(--primary-color);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        margin: 12px 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        transition: all 0.3s ease;
+    }
+
+    .accordion-toggle:hover {
+        background: var(--primary-color-hover);
+        transform: translateY(-2px);
+    }
+
+    /* 🔹 Grid colapsable: en mobile inicia oculto */
+    .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: max-height 0.3s ease, opacity 0.3s ease;
+    }
+
+    /* 🔹 Cuando está activo */
+    .accordion-content.active {
+        max-height: 1500px; /* suficiente para todas las cards */
+        opacity: 1;
+        margin-top: 12px;
+    }
+
+
+    .qr-steps {
+        display: none;
+    }
+
+    .step-title {
+        display: none;
+    }
+
+    .qr-steps .step-line {
+        display: none; /* quitar líneas en columna */
+    }
+}
+
+/* 📱 Móviles medianos (600–767px) */
+@media (max-width: 767px) and (min-width: 600px) {
+
+    .nav-menu {
+        display: none;
+    }
+
+    .burger {
+        display: block;
+    }
+
+    .hero-grid {
+        grid-template-columns: 1fr 340px;
+        gap: 0.8rem;
+        align-items: start;
+    }
+
+    .selector-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px; /* 🔥 menos espacio entre botones */
+        justify-content: flex-start;
+    }
+
+    .selector-item {
+        flex: 1 1 calc(33.333% - 8px);
+/*        max-width: calc(33.333% - 8px);*/
+        padding: 10px 6px; /* menos padding */
+        font-size: 0.8rem; /* texto más compacto */
+    }
+
+    .selector-item i {
+        font-size: 1.2rem;
+        margin-bottom: 4px;
+    }
+
+    /* Paso y título */
+    .step-title {
+        font-size: 1.05rem;
+        margin-bottom: 10px;
+    }
+
+    .qr-steps {
+        margin: 10px 0 15px;
+    }
+
+    /* Preview QR más ajustada */
+    .qr-preview-card {
+        max-width: 300px;
+        padding: 12px 10px;
+    }
+
+    .qr-preview-card h4 {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+
+    /* Botones de descarga compactos */
+    .download-buttons {
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .download-buttons button {
+        font-size: 0.8rem;
+        padding: 8px 10px;
+    }
+
+    /* Botones de acción (atrás / generar) */
+    .wizard-actions {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    /* Reducir botones */
+    .download-buttons button,
+    .wizard-actions .btn {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+    }
+
+    .wizard-actions .btn {
+        width: 100%;
+        font-size: 0.8rem;
+        padding: 8px 10px;
+        border-radius: 6px;
+    }
+}
+
+/* 📱 Rango 480–599px → 2 columnas balanceadas */
+@media (max-width: 599px) and (min-width: 480px) {
+
+    .nav-menu {
+        display: none;
+    }
+
+    .burger {
+        display: block;
+    }
+
+    .hero-grid {
+        /*grid-template-columns: 1fr 340px;*/
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .selector-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px; /* 🔥 menos espacio entre botones */
+        justify-content: flex-start;
+    }
+
+    .selector-item {
+        flex: 1 1 calc(33.333% - 8px);
+        max-width: calc(33.333% - 8px);
+        padding: 10px 6px; /* menos padding */
+        font-size: 0.8rem; /* texto más compacto */
+    }
+
+    /* Preview */
+    .qr-preview-card {
+        max-width: 260px; /* 🔹 un poco más ancho */
+        padding: 14px 12px;
+    }
+
+    .qr-preview-card h4 {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+
+    .qr-preview-card svg {
+        max-width: 280px;
+        max-height: 280px;
+    }
+
+    /* Botones de descarga */
+    /*.download-buttons {
+        flex-direction: column;*/ /* 🔹 apilados verticalmente */
+        /*gap: 8px;
+    }
+
+    .download-buttons button {
+        font-size: 0.9rem;
+        padding: 10px 12px;
+        border-radius: 8px;
+    }*/
+
+    /* Pasos */
+    .qr-steps .step-label {
+        font-size: 0.75rem;
+    }
+
+    /* Botones de descarga */
+    .download-buttons {
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 12px;
+        border-top: none;
+        padding: 0px;
+    }
+
+    .download-buttons button {
+        font-size: 0.8rem;
+        padding: 8px 10px;
+    }
+
+
+    /* Botones de acción (atrás / generar) */
+    .wizard-actions {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    /* Reducir botones */
+    .download-buttons button,
+    .wizard-actions .btn {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+    }
+
+    .wizard-actions .btn {
+        width: 100%;
+        font-size: 0.8rem;
+        padding: 8px 10px;
+        border-radius: 6px;
+    }
+}
+
+
+/* 📱 Extra compacto: 375px–425px */
+@media (max-width: 479px) and (min-width: 361px) {
+
+    .nav-menu {
+        display: none;
+    }
+
+    .burger {
+        display: block;
+    }
+
+    .hero {
+        padding: 30px 10px;
+    }
+
+    /* Texto del título más reducido */
+    .hero h1 {
+        font-size: 1.2rem;
+        margin-bottom: 12px;
+    }
+
+    .hero p {
+        font-size: 0.85rem;
+    }
+
+    .hero-grid {
+        grid-template-columns: 1fr; /* stack */
+    }
+
+    .selector-grid {
+        grid-template-columns: 1fr; /* botones full-width */
+        gap: 10px;
+    }
+
+    /* Pasos → mucho más chicos */
+    .qr-steps {
+        margin: 10px 0 15px;
+        gap: 6px;
+    }
+
+    .qr-steps .step-circle {
+        width: 26px;
+        height: 26px;
+        font-size: 0.7rem;
+    }
+
+    .qr-steps .step-label {
+        font-size: 0.65rem;
+    }
+
+    .qr-steps .step-line {
+        height: 2px;
+    }
+
+    /* Paso 1 / 2 / 3 título */
+
+    .step-title {
+        display: none;
+    }
+
+    /* Acordeón más compacto */
+    .qr-accordion-header {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+
+    /* Tabs de personalización */
+    .qr-tabs .tab {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+        border-radius: 6px;
+    }
+
+    /* Botones de acción (atrás / generar) */
+    .wizard-actions {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    /* Reducir botones */
+    .download-buttons button,
+    .wizard-actions .btn {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+    }
+
+    .wizard-actions .btn {
+        width: 100%;
+        font-size: 0.8rem;
+        padding: 8px 10px;
+        border-radius: 6px;
+    }
+
+    /* Card de preview */
+
+    .qr-preview-card {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 14px 12px;
+        margin-top: 16px;
+    }
+
+    .qr-preview-card h4 {
+        font-size: 0.85rem;
+    }
+
+
+    .qr-preview-card svg {
+        max-width: 300px;
+        max-height: 300px;
+    }
+
+    /* Botones de descarga */
+    .download-buttons {
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 12px;
+        border-top: none;
+        padding: 0px;
+    }
+
+    .download-buttons button {
+        font-size: 0.8rem;
+        padding: 8px 10px;
+    }
+
+    .hero-grid {
+        gap: 0.5rem;
+    }
+    .selector-grid {
+        margin-bottom: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    .qr-accordion {
+        margin-bottom: 0.5rem;
+    }
+
+    .qr-preview-card {
+        margin: 0.5rem;
+        padding: 0.5rem
+    }
+}
+
+
+/* Muy pequeños <= 360px (ej: 320px) */
+@media (max-width: 360px) {
+    .nav-menu {
+        display: none;
+    }
+
+    .burger {
+        display: block;
+    }
+
+    .hero {
+        padding: 20px 10px; /* menos padding lateral */
+    }
+
+    .hero-grid {
+        grid-template-columns: 1fr; /* full stack */
+        gap: 0rem;
+    }
+
+    .hero-grid > h1 {
+        font-size: 1.2rem; /* más compacto */
+        /*line-height: 1.3;*/
+        margin:0.5rem;
+    }
+
+
+    .selector-grid {
+        grid-template-columns: 1fr; /* botones full-width */
+        gap: 0px;
+        margin: 0.5rem;
+    }
+
+    .selector-item {
+        font-size: 0.8rem;
+        padding: 0.6rem;
+    }
+
+    .qr-preview-card {
+        padding: 14px 10px;
+        border-radius: 12px;
+        max-width: 100%;
+    }
+
+    .qr-preview-card h4 {
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+    }
+
+    .qr-preview-card svg {
+        max-width: 250px;
+        max-height: 250px;
+    }
+
+    .download-buttons {
+        flex-direction: column;
+        gap: 8px;
+        padding: 0;
+    }
+
+    .download-buttons button {
+        font-size: 0.85rem;
+        padding: 8px 12px;
+        width: 100%;
+    }
+
+    .wizard-actions {
+        flex-direction: column; /* botones apilados */
+        gap: 10px;
+        margin-top: 16px;
+        align-items: stretch; /* que ocupen el ancho */
+    }
+
+    .wizard-actions .btn {
+        font-size: 0.85rem;
+        padding: 10px 12px;
+        border-radius: 8px;
+        width: 100%; /* 🔥 full width */
+        text-align: center;
+    }
+
+    .btn-generate {
+        font-size: 1rem;
+        padding: 12px;
+        font-weight: 700;
+    }
+
+    .btn-back {
+        background: #f3f4f6;
+        border: 1px solid #d1d5db;
+        color: #374151;
+        font-weight: 500;
+    }
+
+    .main-footer {
+        font-size: 0.75rem;
+        padding: 12px;
+    }
+
+    .qr-shape-options {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .selector-grid {
+        grid-template-columns: 1fr;
+    }
+/*
+    .qr-preview-card {
+        margin-top: 20px;
+        padding: 12px;
+    }*/
+
+    /* Tabs compactos */
+    .qr-tabs .tab {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+        border-radius: 6px;
+    }
+
+    .qr-tabs {
+        gap: 4px;
+        margin-bottom: 6px;
+        flex-wrap: wrap; /* si no caben, saltan de línea */
+        justify-content: center;
+    }
+
+    /* Opciones de formas → más chicos */
+    .qr-shape-options {
+        grid-template-columns: repeat(4, 1fr); /* 🔥 4 íconos por fila */
+        gap: 6px;
+        padding: 6px;
+    }
+
+    .qr-shape-btn {
+        width: 38px;
+        height: 38px;
+        margin: 2px;
+        border-radius: 10px;
+    }
+
+    .qr-shape-btn img,
+    .qr-shape-btn svg {
+        width: 60%;
+        height: 60%;
+    }
+
+    /* Encabezados más compactos */
+    .qr-accordion-header {
+        padding: 6px 10px; /* 🔥 menos alto */
+        font-size: 0.75rem;
+    }
+
+    /* Reducir paddings internos */
+    .qr-accordion-body {
+        overflow: hidden;
+    }
+
+    /* Cuando se abre */
+    .qr-accordion-item.active .qr-accordion-body {
+        padding: 8px 10px; /* más compacto */
+    }
+
+    /* Tabs dentro del header compactas */
+    .qr-tabs .tab {
+        font-size: 0.65rem;
+        padding: 3px 6px;
+    }
+
+    /* Botones de acción */
+    .wizard-actions .btn {
+        font-size: 0.8rem;
+        padding: 8px 12px;
+        border-radius: 8px;
+    }
+
+    .accordion-toggle {
+        margin: 0.5rem;
+    }
+
+    .qr-accordion {
+        margin-bottom: 0.5rem;
+    }
+
+    .qr-preview-card {
+        margin: 0.5rem;
+        padding: 0.5rem
+    }
+}

@@ -1,105 +1,122 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace CustomizableQrCode
 {
     public static class QrContentBuilder
     {
+        // 🔹 URL / Texto
         public static string BuildLink(string url) =>
-            url?.Trim() ?? "";
+            string.IsNullOrWhiteSpace(url) ? "" : url.Trim();
 
         public static string BuildText(string text) =>
-            text?.Trim() ?? "";
+            string.IsNullOrWhiteSpace(text) ? "" : text.Trim();
 
+        // 🔹 Email
         public static string BuildEmail(string to, string subject, string body)
         {
             if (string.IsNullOrWhiteSpace(to)) return "";
+
+            subject ??= "";
+            body ??= "";
+
             var subjectParam = string.IsNullOrWhiteSpace(subject) ? "" : $"subject={Uri.EscapeDataString(subject)}";
             var bodyParam = string.IsNullOrWhiteSpace(body) ? "" : $"body={Uri.EscapeDataString(body)}";
             var sep = (!string.IsNullOrEmpty(subjectParam) && !string.IsNullOrEmpty(bodyParam)) ? "&" : "";
             var query = (subjectParam + sep + bodyParam);
+
             return $"mailto:{to}" + (string.IsNullOrEmpty(query) ? "" : $"?{query}");
         }
 
+        // 🔹 Llamada
         public static string BuildCall(string phone) =>
             string.IsNullOrWhiteSpace(phone) ? "" : $"tel:{phone}";
 
+        // 🔹 SMS
         public static string BuildSMS(string phone, string message)
         {
             if (string.IsNullOrWhiteSpace(phone)) return "";
-            var msg = string.IsNullOrWhiteSpace(message) ? "" : $"?body={Uri.EscapeDataString(message)}";
-            return $"sms:{phone}{msg}";
+            message ??= "";
+            return $"sms:{phone}{(string.IsNullOrWhiteSpace(message) ? "" : $"?body={Uri.EscapeDataString(message)}")}";
         }
 
+        // 🔹 VCard
         public static string BuildVCard(string firstName, string lastName, string phone, string email, string company, string job, string address)
         {
-            return
-$@"BEGIN:VCARD
-VERSION:3.0
-N:{lastName};{firstName}
-FN:{firstName} {lastName}
-ORG:{company}
-TITLE:{job}
-TEL:{phone}
-EMAIL:{email}
-ADR:{address}
-END:VCARD";
+            var sb = new StringBuilder();
+            sb.AppendLine("BEGIN:VCARD");
+            sb.AppendLine("VERSION:3.0");
+            sb.AppendLine($"N:{lastName ?? ""};{firstName ?? ""}");
+            sb.AppendLine($"FN:{(firstName ?? "")} {(lastName ?? "")}".Trim());
+            if (!string.IsNullOrWhiteSpace(company)) sb.AppendLine($"ORG:{company}");
+            if (!string.IsNullOrWhiteSpace(job)) sb.AppendLine($"TITLE:{job}");
+            if (!string.IsNullOrWhiteSpace(phone)) sb.AppendLine($"TEL:{phone}");
+            if (!string.IsNullOrWhiteSpace(email)) sb.AppendLine($"EMAIL:{email}");
+            if (!string.IsNullOrWhiteSpace(address)) sb.AppendLine($"ADR:{address}");
+            sb.AppendLine("END:VCARD");
+            return sb.ToString();
         }
 
+        // 🔹 WhatsApp
         public static string BuildWhatsApp(string phone, string message)
         {
             if (string.IsNullOrWhiteSpace(phone)) return "";
-            var url = $"https://wa.me/{phone}";
-            if (!string.IsNullOrWhiteSpace(message))
-                url += $"?text={Uri.EscapeDataString(message)}";
-            return url;
+            message ??= "";
+            return string.IsNullOrWhiteSpace(message)
+                ? $"https://wa.me/{phone}"
+                : $"https://wa.me/{phone}?text={Uri.EscapeDataString(message)}";
         }
 
+        // 🔹 WiFi
         public static string BuildWiFi(string ssid, string password, string encryption)
         {
             if (string.IsNullOrWhiteSpace(ssid)) return "";
+            encryption ??= "nopass";
+            password ??= "";
             return $"WIFI:T:{encryption};S:{ssid};P:{password};;";
         }
 
+        // 🔹 PDF / App / Imagen / Video / Social
         public static string BuildPDF(string url) =>
-            url?.Trim() ?? "";
+            string.IsNullOrWhiteSpace(url) ? "" : url.Trim();
 
         public static string BuildApp(string url) =>
-            url?.Trim() ?? "";
+            string.IsNullOrWhiteSpace(url) ? "" : url.Trim();
 
         public static string BuildImage(string url) =>
-            url?.Trim() ?? "";
+            string.IsNullOrWhiteSpace(url) ? "" : url.Trim();
 
         public static string BuildVideo(string url) =>
-            url?.Trim() ?? "";
+            string.IsNullOrWhiteSpace(url) ? "" : url.Trim();
 
         public static string BuildSocial(string url) =>
-            url?.Trim() ?? "";
+            string.IsNullOrWhiteSpace(url) ? "" : url.Trim();
 
+        // 🔹 Evento
         public static string BuildEvent(string title, string location, string start, string end)
         {
-            return
-$@"BEGIN:VEVENT
-SUMMARY:{title}
-LOCATION:{location}
-DTSTART:{start}
-DTEND:{end}
-END:VEVENT";
+            if (string.IsNullOrWhiteSpace(title)) return "";
+            var sb = new StringBuilder();
+            sb.AppendLine("BEGIN:VEVENT");
+            sb.AppendLine($"SUMMARY:{title}");
+            if (!string.IsNullOrWhiteSpace(location)) sb.AppendLine($"LOCATION:{location}");
+            if (!string.IsNullOrWhiteSpace(start)) sb.AppendLine($"DTSTART:{start}");
+            if (!string.IsNullOrWhiteSpace(end)) sb.AppendLine($"DTEND:{end}");
+            sb.AppendLine("END:VEVENT");
+            return sb.ToString();
         }
 
+        // 🔹 Barcode2D
         public static string BuildBarcode2D(string content) =>
-            content?.Trim() ?? "";
+            string.IsNullOrWhiteSpace(content) ? "" : content.Trim();
 
-
+        // 🔹 Validadores
         public static bool IsValidEmail(string email)
         {
             if (string.IsNullOrWhiteSpace(email)) return false;
             try
             {
-                // Usa System.Net.Mail si quieres ser estricto
                 var addr = new System.Net.Mail.MailAddress(email);
                 return addr.Address == email;
             }
@@ -112,15 +129,14 @@ END:VEVENT";
         public static bool IsValidPhone(string phone)
         {
             if (string.IsNullOrWhiteSpace(phone)) return false;
-            return System.Text.RegularExpressions.Regex.IsMatch(
-                phone, @"^\+?\d{7,15}$");
+            return Regex.IsMatch(phone, @"^\+?\d{7,15}$");
         }
 
         public static bool IsValidUrl(string url)
         {
             if (string.IsNullOrWhiteSpace(url)) return false;
             return Uri.TryCreate(url, UriKind.Absolute, out var temp)
-                && (temp.Scheme == Uri.UriSchemeHttp || temp.Scheme == Uri.UriSchemeHttps);
+                   && (temp.Scheme == Uri.UriSchemeHttp || temp.Scheme == Uri.UriSchemeHttps);
         }
     }
 }

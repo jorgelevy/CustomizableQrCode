@@ -1,18 +1,14 @@
 ﻿@using CustomizableQrCode.Models
 @using static CustomizableQrCode.Models.QrModels
 
-<div class="combo-visual-group">
-    <label class="combo-title">Centro - Ojo</label>
-    <div class="combo-gallery">
-        @foreach (var shape in (IsExpanded ? EyeCenterShapes : MainShapes))
-        //@foreach (var shape in (showAllShapes ? EyeCenterShapes : MainShapes))
+@* <div class="combo-visual-group">
+    <div class="qr-option-grid style-glass">
+        @foreach (var shape in EyeCenterShapes)
         {
             var shapeEnum = Enum.Parse<EyeCenterShape>(shape.Id);
             bool isDisabled = AllowedCenters != null && !AllowedCenters.Contains(shapeEnum);
-            //class="combo-option @(SelectedShape == shape.Id ? "selected" : "") @(isDisabled ? "disabled" : "")"
-            //class="combo-option @(SelectedEyeShape == shape.Id ? "selected" : "")"
             <button type="button"
-                    class="combo-option @(SelectedEyeShape == shape.Id ? "selected" : "") @(isDisabled ? "disabled" : "")"
+                    class="qr-shape-btn @(SelectedEyeShape == shape.Id ? "selected" : "") @(isDisabled ? "disabled" : "")"
                     disabled="@isDisabled"
                     @onclick="() => SelectEyeShape(shape.Id)"
                     title="@shape.Name"
@@ -20,29 +16,21 @@
                 @shape.Svg
             </button>
         }
-        @if (OtherShapes.Any())
+    </div>
+</div> *@
+
+<div class="combo-visual-group">
+    <div class="qr-option-grid style-glass">
+        @foreach (var shape in EyeCenterShapes)
         {
-            <div class="combo-expand-container">
-                <button type="button"
-                        class="combo-expand more-btn"
-                        @onclick="ToggleSection"
-                        @onmouseover="() => ShowTooltip = true"
-                        @onmouseout="() => ShowTooltip = false"
-                        aria-label="@(showAllShapes ? "Ver menos opciones" : "Ver más opciones")">
-                    @(IsExpanded ? "-" : "+")
-                </button>
-                @if (ShowTooltip)
-                {
-                    <div class="tooltip-combo-expand">
-                        @(showAllShapes ? "Ver menos opciones" : "Ver más opciones de formas")
-                    </div>
-                }
-            </div>
+            <button type="button"
+                    class="qr-shape-btn @(SelectedEyeShape == shape.Id ? "selected" : "")"
+                    @onclick="() => SelectEyeShape(shape.Id)"
+                    title="@shape.Name"
+                    aria-label="@shape.Name">
+                @shape.Svg
+            </button>
         }
-        <input type="color"
-               value="SelectedEyeColor"
-               class="qr-color"
-               @oninput="OnColorEyeChanged" />
     </div>
 </div>
 
@@ -50,14 +38,10 @@
     [Parameter] public string SelectedEyeShape { get; set; }
     [Parameter] public EventCallback<string> SelectedEyeShapeChanged { get; set; }
     [Parameter] public string SelectedEyeColor { get; set; }
-    [Parameter] public EventCallback<string> SelectedEyeColorChanged { get; set; }
     [Parameter] public bool IsExpanded { get; set; }
     [Parameter] public EventCallback ToggleRequested { get; set; }
     [Parameter] public List<EyeCenterShape> AllowedCenters { get; set; } = new();
 
-    // [Parameter] public List<EyeCenterShape>? AllowedCenters { get; set; }
-
-    // private List<EyeCenterShape> AllowedCentersSafe => AllowedCenters ?? new();
 
         // Expandible/collapsable
     private bool showAllShapes = false;
@@ -335,12 +319,12 @@
         await SelectedEyeShapeChanged.InvokeAsync(id);
     }
 
-    private async Task OnColorEyeChanged(ChangeEventArgs e)
-    {
-        var color = e.Value?.ToString();
-        SelectedEyeColor = color;
-        await SelectedEyeColorChanged.InvokeAsync(color);
-    }
+    // private async Task OnColorEyeChanged(ChangeEventArgs e)
+    // {
+    //     var color = e.Value?.ToString();
+    //     SelectedEyeColor = color;
+    //     await SelectedEyeColorChanged.InvokeAsync(color);
+    // }
 
     private bool IsCenterAllowed(string shapeId)
 {

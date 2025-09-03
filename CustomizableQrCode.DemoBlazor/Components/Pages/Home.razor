@@ -4,35 +4,106 @@
 @using CustomizableQrCode.Models
 @using static CustomizableQrCode.Models.QrModels
 @using Microsoft.AspNetCore.Components.Forms
+@inject IJSRuntime JS
 
 @page "/"
-@* <PageTitle>QrBox</PageTitle> *@
-@* <h3>Personaliza tu Código QR</h3> *@
-
 <main class="container-mint">
-    @* Controla el estado de visibilidad *@
-    @if (showWelcome)
-    {
-        <BienvenidaComponent OnClose="CerrarBienvenida" />
+    <section class="hero">
+        <div class="hero-grid">
+            <h1>Genera tu código QR en segundos</h1>
+            <!-- Columna izquierda: Wizard -->
+            <div class="hero-selector">
+                <div class="selector-grid">
+                    <QrWizard OnOptionsChanged="HandleOptionsChanged"></QrWizard>
+                </div>
+            </div>
 
-    }
-    else
-    {
-        <div class="card-mint" id="qrForm">
-            <QrCompGenerator InitialContent="https://midominio.com" OnQrGenerated="OnQrReady" />
+            <!-- Columna derecha: Preview -->
+            <div class="qr-preview-col">
+                <div class="qr-preview-card">
+                    <h4><i class="fas fa-qrcode"></i> Vista previa</h4>
+
+                    @if (isLoading)
+                    {
+                        <div class="qr-loader-custom">Generando QR…</div>
+                    }
+                    else
+                    {
+                        <CustomQrCode QrOptions="qrOptions" OnSvgGenerated="GuardarQrSvgString" />
+                    }
+
+                    <!-- Botones descarga -->
+                    <div class="download-buttons">
+                        <button class="png" @onclick="DownloadPNG">
+                            <i class="fas fa-image"></i> PNG
+                        </button>
+                        <button class="svg" @onclick="DownloadSVG">
+                            <i class="fas fa-project-diagram"></i> SVG
+                        </button>
+                        <button class="pdf" @onclick="DownloadPDF">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
-    }
-
+    </section>
 </main>
 
 @code {
-    private string tipoQrSeleccionado = "Link";
+    private string? tipoQrSeleccionado;
     private bool showWelcome = true;
+
+    private bool isLoading = false;
+    private string QrSvgString;
+
+    QrCodeOptions qrOptions = new QrCodeOptions();
+    private int Quality { get; set; } = 2; // Valor inicial por defecto
+
+    // ✅ Se actualiza cada vez que QrWizard dispare OnOptionsChanged
+    private void HandleOptionsChanged(QrCodeOptions opts)
+    {
+        qrOptions = opts;
+        StateHasChanged();
+    }
+
+    private void GuardarQrSvgString(string svg) => QrSvgString = svg;
 
     void OnQrReady(string qrImageUrl)
     {
         // Puedes hacer algo cuando se genere el QR
     }
+
+
+    private async Task DownloadSVG()
+    {
+        if (!string.IsNullOrWhiteSpace(QrSvgString))
+            await JS.InvokeVoidAsync("downloadSvgNative", QrSvgString, "codigoQR.svg");
+    }
+
+    private async Task DownloadPNG()
+    {
+        if (string.IsNullOrWhiteSpace(QrSvgString)) return;
+        int size = GetQrSize();
+        await JS.InvokeVoidAsync("svgStringToPng", QrSvgString, size, size, "codigoQR.png");
+    }
+
+    private async Task DownloadPDF()
+    {
+        if (string.IsNullOrWhiteSpace(QrSvgString)) return;
+        int size = GetQrSize();
+        await JS.InvokeVoidAsync("exportQrAsPdf", QrSvgString, size, size, "codigoQR.pdf");
+    }
+
+    private int GetQrSize() => Quality switch
+    {
+        0 => 300,
+        1 => 450,
+        2 => 750,
+        3 => 1100,
+        4 => 2048,
+        _ => 450,
+    };
 
 
     private void CerrarBienvenida()

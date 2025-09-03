@@ -1,40 +1,16 @@
 ﻿@using CustomizableQrCode.Models
 
 <div class="combo-visual-group">
-    <label class="combo-title">Marco - Ojo</label>
-    <div class="combo-gallery">
-        @foreach (var shape in (IsExpanded ? EyeFrameShapes : MainShapes))
+    <div class="qr-option-grid style-glass">
+        @foreach (var shape in EyeFrameShapes )
         {
             <button type="button"
-                    class="combo-option @(SelectedShape == shape.Id ? "selected" : "")"
+                    class="qr-shape-btn @(SelectedShape == shape.Id ? "selected" : "")"
                     @onclick="() => SelectShape(shape.Id)"
                     title="@shape.Name">
                 @shape.Svg
             </button>
         }
-        @if (OtherShapes.Any())
-        {
-            <div class="combo-expand-container">
-                <button type="button"
-                        class="combo-expand more-btn"
-                        @onclick="ToggleSection"
-                        @onmouseover="() => ShowTooltip = true"
-                        @onmouseout="() => ShowTooltip = false"
-                        aria-label="@(showAllShapes ? "Ver menos opciones" : "Ver más opciones")">
-                    @(IsExpanded ? "-" : "+")
-                </button>
-                @if (ShowTooltip)
-                {
-                    <div class="tooltip-combo-expand">
-                        @(showAllShapes ? "Ver menos opciones" : "Ver más opciones de formas")
-                    </div>
-                }
-            </div>
-        }
-        <input type="color"
-               value="SelectedColor"
-               class="qr-color"
-               @oninput="OnColorChanged" />
     </div>
 </div>
 
@@ -42,7 +18,7 @@
     [Parameter] public string SelectedShape { get; set; }
     [Parameter] public EventCallback<string> SelectedShapeChanged { get; set; }
     [Parameter] public string SelectedColor { get; set; }
-    [Parameter] public EventCallback<string> SelectedColorChanged { get; set; }
+    // [Parameter] public EventCallback<string> SelectedColorChanged { get; set; }
     [Parameter] public bool IsExpanded { get; set; }
     [Parameter] public EventCallback ToggleRequested { get; set; }
 
@@ -149,10 +125,10 @@
         await SelectedShapeChanged.InvokeAsync(id);
     }
 
-    private async Task OnColorChanged(ChangeEventArgs e)
-    {
-        var color = e.Value?.ToString();
-        SelectedColor = color;
-        await SelectedColorChanged.InvokeAsync(color);
-    }
+    // private async Task OnColorChanged(ChangeEventArgs e)
+    // {
+    //     var color = e.Value?.ToString();
+    //     SelectedColor = color;
+    //     await SelectedColorChanged.InvokeAsync(color);
+    // }
 }

@@ -54,32 +54,82 @@ namespace CustomizableQrCode.QrCodeRenderer
                 (quietZone, modules - 7 - quietZone)
             };
 
+            //var sb = new StringBuilder();
+            //sb.AppendLine($"<svg xmlns='http://www.w3.org/2000/svg' width='{size}' height='{size}' viewBox='0 0 {size} {size}'>");
             var sb = new StringBuilder();
             sb.AppendLine($"<svg xmlns='http://www.w3.org/2000/svg' width='{size}' height='{size}' viewBox='0 0 {size} {size}'>");
 
-            // Fondo del SVG
+
+            //// Fondo del SVG
+            //if (!string.IsNullOrEmpty(backgroundGradient))
+            //{
+            //    var colors = backgroundGradient.Split(',');
+            //    if (colors.Length == 2)
+            //    {
+            //        sb.AppendLine($"<defs><linearGradient id='bg' x1='0%' y1='0%' x2='100%' y2='100%'>" +
+            //            $"<stop offset='0%' stop-color='{colors[0]}'/>" +
+            //            $"<stop offset='100%' stop-color='{colors[1]}'/>" +
+            //            $"</linearGradient></defs>");
+            //        sb.AppendLine($"<rect width='{size}' height='{size}' fill='url(#bg)'/>");
+            //    }
+            //    else
+            //    {
+            //        sb.AppendLine($"<rect width='{size}' height='{size}' fill='{colors[0]}'/>");
+            //    }
+            //}
+            //else
+            //{
+            //    sb.AppendLine($"<rect width='{size}' height='{size}' fill='#fff'/>");
+            //}
+
+            //// Función auxiliar: Determina si un módulo está en el área de algún ojo
+            //bool IsInEyeArea(int x, int y)
+            //{
+            //    foreach (var (ex, ey) in eyePositions)
+            //    {
+            //        if (x >= ex && x < ex + 7 && y >= ey && y < ey + 7)
+            //            return true;
+            //    }
+            //    return false;
+            //}
+
+            // 🔹 Definiciones globales (gradientes y filtros)
+            sb.AppendLine("<defs>");
+                    sb.AppendLine(@"
+                <filter id='eyeShadow' x='-20%' y='-20%' width='140%' height='140%'>
+                    <feDropShadow dx='0' dy='2' stdDeviation='2' flood-color='rgba(0,0,0,0.25)'/>
+                </filter>
+            ");
             if (!string.IsNullOrEmpty(backgroundGradient))
             {
                 var colors = backgroundGradient.Split(',');
                 if (colors.Length == 2)
                 {
-                    sb.AppendLine($"<defs><linearGradient id='bg' x1='0%' y1='0%' x2='100%' y2='100%'>" +
-                        $"<stop offset='0%' stop-color='{colors[0]}'/>" +
-                        $"<stop offset='100%' stop-color='{colors[1]}'/>" +
-                        $"</linearGradient></defs>");
+                    sb.AppendLine(@$"
+                <radialGradient id='bg' cx='50%' cy='50%' r='75%'>
+                    <stop offset='0%' stop-color='{colors[0]}'/>
+                    <stop offset='100%' stop-color='{colors[1]}'/>
+                </radialGradient>
+            ");
+                }
+            }
+            sb.AppendLine("</defs>");
+
+            // 🔹 Fondo
+            if (!string.IsNullOrEmpty(backgroundGradient))
+            {
+                var colors = backgroundGradient.Split(',');
+                if (colors.Length == 2)
                     sb.AppendLine($"<rect width='{size}' height='{size}' fill='url(#bg)'/>");
-                }
                 else
-                {
                     sb.AppendLine($"<rect width='{size}' height='{size}' fill='{colors[0]}'/>");
-                }
             }
             else
             {
                 sb.AppendLine($"<rect width='{size}' height='{size}' fill='#fff'/>");
             }
 
-            // Función auxiliar: Determina si un módulo está en el área de algún ojo
+            // 🔹 Función auxiliar: detectar si está en área de ojo
             bool IsInEyeArea(int x, int y)
             {
                 foreach (var (ex, ey) in eyePositions)
@@ -112,7 +162,75 @@ namespace CustomizableQrCode.QrCodeRenderer
                             var hex = GetHexagonPoints(px, py, moduleSize);
                             sb.AppendLine($"<polygon points='{hex}' fill='{moduleColor}'/>");
                             break;
+                        //case ModuleShape.Rounded:
+                        //    sb.AppendLine($"<rect x='{px}' y='{py}' width='{moduleSize}' height='{moduleSize}' rx='{moduleSize * 0.4}' fill='{moduleColor}'/>");
+                        //    break;
+                        //case ModuleShape.Outline:
+                        //    sb.AppendLine($"<rect x='{px}' y='{py}' width='{moduleSize}' height='{moduleSize}' fill='none' stroke='{moduleColor}' stroke-width='{moduleSize * 0.2}'/>");
+                        //    break;
+                        case ModuleShape.Heart:
+                            sb.AppendLine($"<path d='M{px + moduleSize / 2},{py + moduleSize / 4} " +
+                                $"C{px},{py - moduleSize / 4} {px - moduleSize / 2},{py + moduleSize / 2} {px + moduleSize / 2},{py + moduleSize} " +
+                                $"C{px + moduleSize * 1.5},{py + moduleSize / 2} {px + moduleSize},{py - moduleSize / 4} {px + moduleSize / 2},{py + moduleSize / 4} Z' " +
+                                $"fill='{moduleColor}'/>");
+                            break;
+
+                        case ModuleShape.Star:
+                            sb.AppendLine(DrawStar(px + moduleSize / 2, py + moduleSize / 2, moduleSize / 2, moduleColor));
+                            break;
+
+                        case ModuleShape.Diamond:
+                            sb.AppendLine($"<polygon points='{px + moduleSize / 2},{py} {px + moduleSize},{py + moduleSize / 2} {px + moduleSize / 2},{py + moduleSize} {px},{py + moduleSize / 2}' fill='{moduleColor}'/>");
+                            break;
+
+                        case ModuleShape.VerticalBar:
+                            sb.AppendLine($"<rect x='{px + moduleSize * 0.35}' y='{py}' width='{moduleSize * 0.3}' height='{moduleSize}' rx='{moduleSize * 0.15}' fill='{moduleColor}'/>");
+                            break;
+
+                        case ModuleShape.HorizontalBar:
+                            sb.AppendLine($"<rect x='{px}' y='{py + moduleSize * 0.35}' width='{moduleSize}' height='{moduleSize * 0.3}' rx='{moduleSize * 0.15}' fill='{moduleColor}'/>");
+                            break;
+
+                        case ModuleShape.Block:
+                            sb.AppendLine($"<rect x='{px + moduleSize * 0.1}' y='{py + moduleSize * 0.1}' width='{moduleSize * 0.8}' height='{moduleSize * 0.8}' fill='{moduleColor}'/>");
+                            break;
+
+                        //case ModuleShape.RoundedBlock:
+                        //    sb.AppendLine($"<rect x='{px + moduleSize * 0.1}' y='{py + moduleSize * 0.1}' width='{moduleSize * 0.8}' height='{moduleSize * 0.8}' rx='{moduleSize * 0.3}' fill='{moduleColor}'/>");
+                        //    break;
+                        case ModuleShape.Triangle:
+                            sb.AppendLine(DrawTriangle(px, py, moduleSize, moduleColor));
+                            break;
+                        case ModuleShape.Cross:
+                            sb.AppendLine(DrawCross(px, py, moduleSize, moduleColor));
+                            break;
+                        case ModuleShape.Teardrop:
+                            sb.AppendLine(DrawTeardrop(px, py, moduleSize, moduleColor));
+                            break;
+                        case ModuleShape.Wave:
+                            sb.AppendLine(DrawWave(px, py, moduleSize, moduleColor));
+                            break;
+                        case ModuleShape.Flower:
+                            sb.AppendLine(DrawFlower(px, py, moduleSize, moduleColor));
+                            break;
+                        case ModuleShape.PixelBurst:
+                            sb.AppendLine(DrawPixelBurst(px, py, moduleSize, moduleColor));
+                            break;
+                        //case ModuleShape.Infinity:
+                        //    sb.AppendLine(DrawInfinity(px, py, moduleSize, moduleColor));
+                        //    break;
+                        case ModuleShape.Snowflake:
+                            sb.AppendLine(DrawSnowflake(px, py, moduleSize, moduleColor));
+                            break;
+                        //case ModuleShape.Arrow:
+                        //    //sb.AppendLine(DrawArrow(px, py, moduleSize, moduleColor));
+                        //    sb.AppendLine($"<g transform='rotate(90,{px},{py})'>{DrawArrow(px, py, moduleSize, moduleColor)}</g>");
+                        //    break;
+                        case ModuleShape.DotGrid:
+                            sb.AppendLine(DrawDotGrid(px, py, moduleSize, moduleColor));
+                            break;
                     }
+
                 }
             }
 
@@ -1254,5 +1372,134 @@ namespace CustomizableQrCode.QrCodeRenderer
                 return (img.Width, img.Height);
             }
         }
+
+        private static string DrawStar(double cx, double cy, double r, string color, int points = 5)
+        {
+            var sb = new StringBuilder();
+            sb.Append($"<polygon fill='{color}' points='");
+
+            for (int i = 0; i < points * 2; i++)
+            {
+                double angle = Math.PI / points * i;
+                double radius = (i % 2 == 0) ? r : r * 0.5;
+                double x = cx + radius * Math.Cos(angle - Math.PI / 2);
+                double y = cy + radius * Math.Sin(angle - Math.PI / 2);
+                sb.Append($"{x},{y} ");
+            }
+
+            sb.Append("'/>");
+            return sb.ToString();
+        }
+
+        private static string DrawTriangle(double x, double y, double size, string color)
+        {
+            double cx = x + size / 2;
+            double cy = y + size / 2;
+            double r = size / 2;
+            return $"<polygon points='{cx},{cy - r} {cx - r},{cy + r} {cx + r},{cy + r}' fill='{color}'/>";
+        }
+
+        private static string DrawCross(double x, double y, double size, string color)
+        {
+            double third = size / 3;
+            var sb = new StringBuilder();
+            sb.AppendLine($"<rect x='{x + third}' y='{y}' width='{third}' height='{size}' fill='{color}'/>");
+            sb.AppendLine($"<rect x='{x}' y='{y + third}' width='{size}' height='{third}' fill='{color}'/>");
+            return sb.ToString();
+        }
+
+        private static string DrawTeardrop(double x, double y, double size, string color)
+        {
+            double cx = x + size / 2;
+            double cy = y + size / 2;
+            double r = size / 2;
+            return $"<path d='M{cx},{cy - r} Q{cx + r},{cy} {cx},{cy + r} Q{cx - r},{cy} {cx},{cy - r}Z' fill='{color}'/>";
+        }
+
+        private static string DrawWave(double x, double y, double size, string color)
+        {
+            double r = size / 2;
+            return $"<path d='M{x},{y + r} Q{x + r / 2},{y - r / 2} {x + r},{y + r} T{x + size},{y + r} V{y + size} H{x} Z' fill='{color}'/>";
+        }
+
+        private static string DrawFlower(double x, double y, double size, string color)
+        {
+            double cx = x + size / 2, cy = y + size / 2, r = size / 3;
+            var sb = new StringBuilder();
+            sb.AppendLine($"<circle cx='{cx - r / 1.5}' cy='{cy}' r='{r}' fill='{color}'/>");
+            sb.AppendLine($"<circle cx='{cx + r / 1.5}' cy='{cy}' r='{r}' fill='{color}'/>");
+            sb.AppendLine($"<circle cx='{cx}' cy='{cy - r / 1.5}' r='{r}' fill='{color}'/>");
+            sb.AppendLine($"<circle cx='{cx}' cy='{cy + r / 1.5}' r='{r}' fill='{color}'/>");
+            return sb.ToString();
+        }
+
+        private static string DrawPixelBurst(double x, double y, double size, string color)
+        {
+            double cx = x + size / 2, cy = y + size / 2, r = size / 2;
+            return $"<rect x='{x}' y='{y}' width='{size}' height='{size}' fill='{color}' rx='{size * 0.2}'/>";
+        }
+
+        private static string DrawInfinity(double x, double y, double size, string color)
+        {
+            double cx = x + size / 2, cy = y + size / 2, r = size / 3;
+            return $"<path d='M{cx - r},{cy} C{cx - r / 2},{cy - r} {cx + r / 2},{cy + r} {cx + r},{cy} " +
+                   $"C{cx + r / 2},{cy - r} {cx - r / 2},{cy + r} {cx - r},{cy} Z' fill='{color}'/>";
+        }
+
+        private static string DrawSnowflake(double x, double y, double size, string color)
+        {
+            double cx = x + size / 2, cy = y + size / 2, r = size / 2;
+            var sb = new StringBuilder();
+            for (int i = 0; i < 6; i++)
+            {
+                double angle = i * Math.PI / 3;
+                double x2 = cx + r * Math.Cos(angle);
+                double y2 = cy + r * Math.Sin(angle);
+                sb.AppendLine($"<line x1='{cx}' y1='{cy}' x2='{x2}' y2='{y2}' stroke='{color}' stroke-width='{size * 0.15}'/>");
+            }
+            return sb.ToString();
+        }
+
+        private static string DrawArrow(double x, double y, double size, string color)
+        {
+            double cx = x + size / 2;
+            double cy = y + size / 2;
+            double w = size * 0.6;   // ancho de la flecha
+            double h = size * 0.9;   // alto de la flecha
+            double head = size * 0.4; // altura de la punta
+
+            return $@"
+                <path d='
+                    M {cx - w / 2},{cy + h / 2} 
+                    L {cx - w / 2},{cy - head / 2}
+                    L {cx - w},{cy - head / 2}
+                    L {cx},{cy - h / 2}
+                    L {cx + w},{cy - head / 2}
+                    L {cx + w / 2},{cy - head / 2}
+                    L {cx + w / 2},{cy + h / 2}
+                    Z
+                ' fill='{color}'/>
+            ";
+        }
+
+
+        private static string DrawDotGrid(double x, double y, double size, string color)
+        {
+            var sb = new StringBuilder();
+            double step = size / 3;
+            double r = step / 3;
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    double cx = x + step * (i + 0.5);
+                    double cy = y + step * (j + 0.5);
+                    sb.AppendLine($"<circle cx='{cx}' cy='{cy}' r='{r}' fill='{color}'/>");
+                }
+            }
+            return sb.ToString();
+        }
+
+
     }
 }

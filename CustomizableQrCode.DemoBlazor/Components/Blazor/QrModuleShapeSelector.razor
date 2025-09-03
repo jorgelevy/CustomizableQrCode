@@ -2,43 +2,16 @@
 @using static CustomizableQrCode.Models.QrModels
 
 <div class="combo-visual-group">
-    <label class="combo-title">Forma del módulo</label>
-    <div class="combo-gallery">
-        @foreach (var shape in (showAllShapes ? Shapes : MainShapes))
+    <div class="qr-option-grid style-glass">
+        @foreach (var shape in Shapes)
         {
             <button type="button"
-                    class="combo-option @(SelectedShape == shape.Id ? "selected" : "")"
+                    class="qr-shape-btn @(SelectedShape == shape.Id ? "selected" : "")"
                     @onclick="() => SelectShape(shape.Id)"
                     title="@shape.Name">
                 <img src="@shape.Img" alt="@shape.Name" />
             </button>
         }
-        @if (OtherShapes.Any())
-        {
-            <div class="combo-expand-container">
-                <button type="button"
-                        class="combo-expand more-btn"
-                        @onclick="ToggleShapes"
-                        @onmouseover="() => ShowTooltip = true"
-                        @onmouseout="() => ShowTooltip = false"
-                        aria-label="@(showAllShapes ? "Ver menos opciones" : "Ver más opciones")">
-                    @(showAllShapes ? "-" : "+")
-                </button>
-                @if (ShowTooltip)
-                {
-                    <div class="tooltip-combo-expand">
-                        @(showAllShapes ? "Ver menos opciones" : "Ver más opciones de formas")
-                    </div>
-                }
-            </div>
-        }
-        <input type="color" value="SelectedColor"  class="qr-color" @oninput="OnColorChanged" />
-        @* @if (BajoContraste)
-        {
-            <div style="color:#fff; background:#D8000C; padding:10px 16px; border-radius:8px; margin-top:14px; font-weight:bold; max-width:380px;box-shadow:0 2px 10px #a63d3d42;">
-                ⚠️ Bajo contraste: El QR podría no leerse bien. Prueba con colores más contrastantes.
-            </div>
-        } *@
     </div>
 </div>
 
@@ -46,11 +19,10 @@
     [Parameter] public string SelectedShape { get; set; }
     [Parameter] public string SelectedColor { get; set; }
     [Parameter] public EventCallback<string> SelectedShapeChanged { get; set; }
-    [Parameter] public EventCallback<string> SelectedColorChanged { get; set; }
 
     QrCodeOptions qrOptions = new QrCodeOptions();
 
-    private bool showAllShapes = false;
+    private bool showAllShapes = true;
     private int maxVisible = 4; // Cuántas formas principales mostrar
 
     private List<ShapeOption> MainShapes => Shapes.Take(maxVisible).ToList();
@@ -67,6 +39,39 @@
 
     
     //private void ToggleShapes() => showAllShapes = !showAllShapes;
+    private List<ShapeOption> Shapes = new();
+    protected override void OnInitialized()
+    {
+        Shapes = Enum.GetValues<ModuleShape>()
+            .Select(s => new ShapeOption
+            {
+                Id = s.ToString(),
+                Name = GetShapeName(s),
+                Img = $"img/formodulo/{s.ToString().ToLower()}.svg"
+            })
+            .ToList();
+    }
+
+    private string GetShapeName(ModuleShape shape)
+    {
+        return shape switch
+        {
+            ModuleShape.Square => "Cuadrado",
+            ModuleShape.Circle => "Puntos",
+            ModuleShape.Hexagon => "Hexágono",
+            // ModuleShape.Outline => "Contorno",
+            // 🔹 Nuevas formas
+            ModuleShape.Heart => "Corazón",
+            ModuleShape.Star => "Estrella",
+            ModuleShape.Diamond => "Rombo",
+            ModuleShape.VerticalBar => "Barra Vertical",
+            ModuleShape.HorizontalBar => "Barra Horizontal",
+            ModuleShape.Block => "Bloque",
+
+            _ => shape.ToString()
+        };
+    }
+
 
     public class ShapeOption
     {
@@ -75,14 +80,15 @@
         public string Img { get; set; } // puede ser path, base64 o SVG inline
     }
 
-    private List<ShapeOption> Shapes = new()
-    {
-        new ShapeOption { Id = "Square", Name = "Cuadrado", Img = "img/formodulo/square.svg" },
-        new ShapeOption { Id = "Circle", Name = "Puntos", Img = "img/formodulo/circle.svg" },
-        new ShapeOption { Id = "Hexagon", Name = "Redondeado", Img = "img/formodulo/hexagon.svg" },
-        // ...agrega tus formas aquí
-        //Square, Circle, Hexagon
-    };
+    // private List<ShapeOption> Shapes = new()
+    // {
+    //     new ShapeOption { Id = "Square", Name = "Cuadrado", Img = "img/formodulo/square.svg" },
+    //     new ShapeOption { Id = "Circle", Name = "Puntos", Img = "img/formodulo/circle.svg" },
+    //     new ShapeOption { Id = "Hexagon", Name = "Redondeado", Img = "img/formodulo/hexagon.svg" },
+    //     // ...agrega tus formas aquí
+    //     //Square, Circle, Hexagon
+    // };
+
 
     private async Task SelectShape(string id)
     {
@@ -90,12 +96,12 @@
         await SelectedShapeChanged.InvokeAsync(id);
     }
 
-    private async Task OnColorChanged(ChangeEventArgs e)
-    {
-        SelectedColor = e.Value?.ToString();
-        await SelectedColorChanged.InvokeAsync(SelectedColor);
-        StateHasChanged();
-    }
+    // private async Task OnColorChanged(ChangeEventArgs e)
+    // {
+    //     SelectedColor = e.Value?.ToString();
+    //     await SelectedColorChanged.InvokeAsync(SelectedColor);
+    //     StateHasChanged();
+    // }
 
     // === FUNCIONES UTILITARIAS DE CONTRASTE WCAG ===
 

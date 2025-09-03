@@ -23,7 +23,7 @@
     <meta name="twitter:image" content="https://qrbox.com.mx/img/preview.png" />
 
     <!-- Favicon -->
-    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="icon" href="/QrBoxLogoVde.ico" type="image/x-icon" />
 
     <!-- Base y Assets -->
     <base href="/" />
@@ -31,8 +31,10 @@
     <HeadOutlet />
 
     <!-- PRELOAD y defer estilos -->
-    <link rel="preload" href="@Assets["style.min.css"]" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="@Assets["style.min.css"]"></noscript>
+@*     <link rel="preload" href="@Assets["style.min.css"]" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="@Assets["style.min.css"]"></noscript> *@
+    <link rel="preload" href="@Assets["estilos.css"]" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="@Assets["estilos.css"]"></noscript>
 
     <link rel="preload" href="@Assets["CustomizableQrCode.DemoBlazor.styles.css"]" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="@Assets["CustomizableQrCode.DemoBlazor.styles.css"]"></noscript>
@@ -55,6 +57,7 @@
 <body>
     <Routes />
         <!-- utils.js con getWindowWidth -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="./js/qrcode.js" defer></script>
     <script src="_framework/blazor.web.js" defer></script>
 
